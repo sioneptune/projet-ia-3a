@@ -52,3 +52,5 @@ Geometry Dahslike | Terrain simple à coder, outputs ultra simples inputs très 
 
 * **Bien definir les règles du jeu**: Durer le plus longtemps? Buter le plus de bouboules? Être le plus *thicc*?
 
+Rechercher l'algo CMA-ES, très bon pour ce genre de choses.
+Attention à la taille du réseau de neurones (pas plus de 500 poids)
