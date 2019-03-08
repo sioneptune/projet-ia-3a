@@ -21,7 +21,7 @@
 Idée |Pour | Contre
 :---: |:---: | :---:
 Trial Xtreme | Sorties simples ( 2-4 outputs), individus simples | Inputs complexes, affichage chiant mais ça pas tres grave
-Bouboules qui se tirent dessus | Affichage simplissime, input relativment simples => réseau rapide | Entrainement long surtout au début et potentiellement compliqué, peaufinage du code long
+**Bouboules qui se tirent dessus** | **Affichage simplissime, input relativment simples => réseau rapide** | **Entrainement long surtout au début et potentiellement compliqué, peaufinage du code long**
 Geometry Dahslike | Terrain simple à coder, outputs ultra simples inputs très simples, terrain représentable par une bitmap | Génération procédurale à apprendre, surout si difficulté croissante
 
 **Attention à la gestion du crossover si utilisons bibliothèques à la scikit-learn (ce qu'on va faire, hein, quand même (ou eventuellement numpy))**
