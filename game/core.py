@@ -38,32 +38,37 @@ class Arena:
 
 class Fighter:
     """This class defines the fighters"""
-    SPEED = 5
+    FORWARD_SPEED = 5
+    ROTATE_SPEED = 0.1
+    DAMAGE_FACTOR = 0.05
+    ROTATE_LEFT = 0
+    ROTATE_RIGHT = 1
 
-    def __init__(self):
-        self.arena = None
+    def __init__(self, position=(350, 350), arena=None):
+        self.arena = arena
         self.health = 100
-        self.position = (0, 0)
+        self.position = position
         self.direction = 0  # angle
         self.shot_bullet = None
 
     def shoot(self):
         """Shoots a bullet in the same direction as the fighter. Returns the said bullet/adds it to arena bullet list.
             Only shoots if no shot bullet is currently alive (eg shotbullet==None)"""
-        # TODO
-        pass
+        self.arena.bullets.append(Bullet(self.direction, Fighter.DAMAGE_FACTOR * self.health, self))
 
     # Moves towards current direction
     def move(self):
         """RTFT"""
-        # TODO
-        pass
+        self.position[0] += Fighter.FORWARD_SPEED * cos(self.direction)
+        self.position[1] += Fighter.FORWARD_SPEED * sin(self.direction)
 
     # Changes direction
     def turn(self, side):
         """Takes in a 'side' (boolean)"""
-        # TODO
-        pass
+        if side == Fighter.ROTATE_LEFT:
+            self.direction += Fighter.ROTATE_SPEED
+        else:
+            self.direction += Fighter.ROTATE_SPEED
 
     def look(self):
         """Will look in a "cone" for enemies and bullets. If sees things, either adds them to NN or does shitty AI"""
@@ -71,7 +76,7 @@ class Fighter:
 
     def shot(self, bullet):
         """Manages when the fighter gets shot by a bullet"""
-        # TODO
+        self.health -= bullet.damage
         pass
 
 
@@ -84,10 +89,10 @@ class Bullet:
         self.dx = cos(direction) * Bullet.SPEED
         self.dy = sin(direction) * Bullet.SPEED
         self.damage = damage
-        self.position = (0, 0)
+        self.position = scmf.position
         self.scmf = scmf  # The stone-cold motherfucker who done fired this bullet
 
     def move(self):
         """Manages the bullet's displacement"""
-        # TODO
-        pass
+        self.position[0] += self.dx
+        self.position[1] += self.dy
