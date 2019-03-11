@@ -1,7 +1,7 @@
 #####
 # File containing the game infrastructure
 #####
-from math import cos, sin, radians
+from math import cos, sin
 
 
 class Arena:
@@ -44,7 +44,7 @@ class Fighter:
     ROTATE_LEFT = 0
     ROTATE_RIGHT = 1
 
-    def __init__(self, position=(350.0, 350.0), arena=None):
+    def __init__(self, position=(350, 350), arena=None):
         self.arena = arena
         self.health = 100
         self.position = position
@@ -54,24 +54,21 @@ class Fighter:
     def shoot(self):
         """Shoots a bullet in the same direction as the fighter. Returns the said bullet/adds it to arena bullet list.
             Only shoots if no shot bullet is currently alive (eg shotbullet==None)"""
-        b = Bullet((self.position[0], self.position[1]), self.direction, 10, self)
-        self.shot_bullet = b
-        self.arena.bullets.append(b)
+        self.arena.bullets.append(Bullet(self.direction, Fighter.DAMAGE_FACTOR * self.health, self))
 
     # Moves towards current direction
     def move(self):
         """RTFT"""
-        x = self.position[0] + cos(radians(self.direction))
-        y = self.position[1] + sin(radians(self.direction))
-        self.position = (x, y)
+        self.position[0] += Fighter.FORWARD_SPEED * cos(self.direction)
+        self.position[1] += Fighter.FORWARD_SPEED * sin(self.direction)
 
     # Changes direction
     def turn(self, side):
-        """Takes in a 'side' (boolean), true = right"""
-        if side:
-            self.direction += 5
+        """Takes in a 'side' (boolean)"""
+        if side == Fighter.ROTATE_LEFT:
+            self.direction += Fighter.ROTATE_SPEED
         else:
-            self.direction -= 5
+            self.direction += Fighter.ROTATE_SPEED
 
     def look(self):
         """Will look in a "cone" for enemies and bullets. If sees things, either adds them to NN or does shitty AI"""
@@ -79,6 +76,7 @@ class Fighter:
 
     def shot(self, bullet):
         """Manages when the fighter gets shot by a bullet"""
+        self.health -= bullet.damage
         pass
 
 
@@ -87,15 +85,14 @@ class Bullet:
 
     SPEED = 20
 
-    def __init__(self, position, direction, damage, scmf):
-        self.dx = cos(radians(direction)) * Bullet.SPEED
-        self.dy = sin(radians(direction)) * Bullet.SPEED
+    def __init__(self, direction, damage, scmf):
+        self.dx = cos(direction) * Bullet.SPEED
+        self.dy = sin(direction) * Bullet.SPEED
         self.damage = damage
-        self.position = position
+        self.position = scmf.position
         self.scmf = scmf  # The stone-cold motherfucker who done fired this bullet
 
     def move(self):
         """Manages the bullet's displacement"""
-        x = self.position[0] + self.dx
-        y = self.position[1] + self.dy
-        self.position = (x, y)
+        self.position[0] += self.dx
+        self.position[1] += self.dy
