@@ -13,7 +13,7 @@ class Arena:
         self.fighters = []
         self.bullets = []
 
-    def populate(self,fighterlist=[]):
+    def populate(self, fighterlist=None):
         """Generates the fighters, places fighters from list, then adds more until reaches MAX_FIGHTERS"""
         # TODO
         pass
@@ -44,7 +44,7 @@ class Fighter:
         self.arena = None
         self.health = 100
         self.position = (0, 0)
-        self.direction = 0      # angle
+        self.direction = 0  # angle
         self.shot_bullet = None
 
     def shoot(self):
@@ -69,6 +69,11 @@ class Fighter:
         """Will look in a "cone" for enemies and bullets. If sees things, either adds them to NN or does shitty AI"""
         # TODO
 
+    def shot(self, bullet):
+        """Manages when the fighter gets shot by a bullet"""
+        # TODO
+        pass
+
 
 class Bullet:
     """This class might not be necessary, but it defines the type of ammunition used"""
@@ -76,7 +81,13 @@ class Bullet:
     SPEED = 20
 
     def __init__(self, direction, damage, scmf):
-        self.dx = cos(direction)*Bullet.SPEED
-        self.dy = sin(direction)*Bullet.SPEED
+        self.dx = cos(direction) * Bullet.SPEED
+        self.dy = sin(direction) * Bullet.SPEED
         self.damage = damage
-        self.scmf = scmf # The stone-cold motherfucker who done fired this bullet
+        self.position = (0, 0)
+        self.scmf = scmf  # The stone-cold motherfucker who done fired this bullet
+
+    def move(self):
+        """Manages the bullet's displacement"""
+        # TODO
+        pass
