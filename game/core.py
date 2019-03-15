@@ -1,7 +1,7 @@
 #####
 # File containing the game infrastructure
 #####
-from math import cos, sin
+from math import cos, sin, pow
 
 
 class Arena:
@@ -13,27 +13,61 @@ class Arena:
         self.fighters = []
         self.bullets = []
 
+    def is_fighter(self, pos, offset=0, circle=False):
+        # Note du programmeur adjoint: je suis éthiquement opposé à la ligne suivante
+        if circle:
+            for fighter in self.fighters:
+                if pow(pos[0] - fighter.position[0], 2) + pow(pos[1] - fighter.position[1], 2) < pow(fighter.health, 2):
+                    return fighter
+            return None
+
+        for fighter in self.fighters:
+            cond_up_left = pos[0] + offset >= fighter.position[0] - fighter.health and pos[1] + offset >= fighter.position[1] - fighter.health
+            cond_down_left = pos[0] + offset >= fighter.position[0] - fighter.health and pos[1] - offset <= fighter.position[1] + fighter.health
+            cond_up_right = pos[0] - offset <= fighter.position[0] + fighter.health and pos[1] + offset >= fighter.position[1] - fighter.health
+            cond_down_right = pos[0] - offset <= fighter.position[0] + fighter.health and pos[1] - offset <= fighter.position[1] + fighter.health
+            if cond_down_left or cond_up_left or cond_up_right or cond_down_right:
+                return fighter
+        return None
+
     def populate(self, fighterlist=None):
         """Generates the fighters, places fighters from list, then adds more until reaches MAX_FIGHTERS"""
-        # TODO
-        pass
+        self.fighters = [fighter for fighter in fighterlist]
+        positions_at_angles = [(100, 100), (600, 100), (600, 600), (100, 600)]
+        for i in range(len(self.fighters), Arena.MAX_FIGHTERS):
+            for position in positions_at_angles:
+                if not self.is_fighter(position, offset=100):
+                    self.fighters.append(Fighter(position=position, arena=self))
 
     def add_fighter(self, fighter):
-        # TODO
-        pass
+        if not self.is_fighter(fighter.position, offset=100) and len(self.fighters) < Arena.MAX_FIGHTERS:
+            self.fighters.append(fighter)
 
     def fighter_hit(self, fighter, bullet):
         """Manages when a bullet hits the fighter. Removes health, and if h<0, calls fighter_down"""
-        # TODO
-        pass
+        if bullet.damage >= fighter.health:
+            self.fighter_down(fighter, bullet.scmf, fighter.health)
+        else:
+            fighter.shot(bullet)
+        bullet.scmf.shot_bullet = None
+        self.bullets.remove(bullet)
+        del bullet
 
-    def fighter_down(self, fighter, killer):
+    def fighter_down(self, fighter, killer, health):
         """Manages a death. Removes fighter from list, gives health to the killer (fighter obj)"""
-        # TODO
-        pass
+        killer.health += health
+        self.fighters.remove(fighter)
+        del fighter
 
     def run(self):
         """Queries the fighters for their action, makes movements for 1 frame"""
+        for fighter in self.fighters:
+            fighter.move()
+        for bullet in self.bullets:
+            bullet.move()
+            fighter = self.is_fighter(bullet.position, circle=True)
+            if fighter:
+                self.fighter_hit(fighter, bullet)
 
 
 class Fighter:
@@ -54,7 +88,9 @@ class Fighter:
     def shoot(self):
         """Shoots a bullet in the same direction as the fighter. Returns the said bullet/adds it to arena bullet list.
             Only shoots if no shot bullet is currently alive (eg shotbullet==None)"""
-        self.arena.bullets.append(Bullet(self.direction, Fighter.DAMAGE_FACTOR * self.health, self))
+        if not self.shot_bullet:
+            self.shot_bullet = Bullet(self.direction, Fighter.DAMAGE_FACTOR * self.health, self)
+            self.arena.bullets.append(self.shot_bullet)
 
     # Moves towards current direction
     def move(self):
@@ -74,10 +110,17 @@ class Fighter:
         """Will look in a "cone" for enemies and bullets. If sees things, either adds them to NN or does shitty AI"""
         # TODO
 
+    def take_move_decision(self):
+        # TODO
+        pass
+
+    def take_shoot_decision(self):
+        # TODO
+        pass
+
     def shot(self, bullet):
         """Manages when the fighter gets shot by a bullet"""
         self.health -= bullet.damage
-        pass
 
 
 class Bullet:
