@@ -38,12 +38,16 @@ class Arena:
 
 class Fighter:
     """This class defines the fighters"""
-    SPEED = 5
+    FORWARD_SPEED = 5
+    ROTATE_SPEED = 0.1
+    DAMAGE_FACTOR = 0.05
+    ROTATE_LEFT = 0
+    ROTATE_RIGHT = 1
 
-    def __init__(self):
-        self.arena = None
+    def __init__(self, position=(350, 350), arena=None):
+        self.arena = arena
         self.health = 100
-        self.position = (0, 0)
+        self.position = position
         self.direction = 0  # angle
         self.shot_bullet = None
 
