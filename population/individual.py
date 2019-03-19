@@ -50,7 +50,7 @@ class NaiveBot(Fighter):
 class Humanbot(Fighter):
     """An implementation of fighter controlled by human inputs"""
     def __init__(self, position=(350, 350), arena=None):
-        Fighter.__init__(position=position, arena=arena)
+        Fighter.__init__(self,position=position, arena=arena)
         self.human = True
 
     def turn(self, side):
@@ -66,7 +66,7 @@ class Humanbot(Fighter):
 
 class CleverBot(Fighter):
     def __init__(self, sizes, position=(350, 350), arena=None):
-        Fighter.__init__(position=position, arena=arena)
+        Fighter.__init__(self,position=position, arena=arena)
         self.brain = NeuralNetwork(sizes)
         # Format: [move, shoot]
         self.decisions = [0, 0]
