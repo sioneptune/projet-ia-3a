@@ -17,7 +17,10 @@ class Arena:
         # Note du programmeur adjoint: je suis éthiquement opposé à la ligne suivante
         if circle:
             for fighter in self.fighters:
-                if pow(pos[0] - fighter.position[0], 2) + pow(pos[1] - fighter.position[1], 2) < pow(fighter.health, 2):
+                a = pow(pos[0] - fighter.position[0], 2)
+                b = pow(pos[1] - fighter.position[1], 2)
+                c = pow(fighter.health/4, 2)
+                if a + b < c:
                     return fighter
             return None
 
@@ -45,7 +48,8 @@ class Arena:
 
     def fighter_hit(self, fighter, bullet):
         """Manages when a bullet hits the fighter. Removes health, and if h<0, calls fighter_down"""
-        if bullet.damage >= fighter.health:
+        if bullet.damage * Fighter.SHOT_HEALTH_RATE >= fighter.health:
+            print("a fighter should be down")
             self.fighter_down(fighter, bullet.scmf, fighter.health)
         else:
             fighter.shot(bullet)
@@ -56,6 +60,7 @@ class Arena:
     def fighter_down(self, fighter, killer, health):
         """Manages a death. Removes fighter from list, gives health to the killer (fighter obj)"""
         killer.health += health
+        fighter.health = 0
         self.fighters.remove(fighter)
         del fighter
 
@@ -74,7 +79,8 @@ class Arena:
             else:
                 fighter = self.is_fighter(bullet.position, circle=True)
                 if fighter:
-                    self.fighter_hit(fighter, bullet)
+                    if fighter != bullet.scmf:
+                        self.fighter_hit(fighter, bullet)
 
 
 class Fighter:
@@ -84,6 +90,8 @@ class Fighter:
     DAMAGE_FACTOR = 0.05
     ROTATE_LEFT = 0
     ROTATE_RIGHT = 1
+    SHOT_HEALTH_RATE = 5
+    MIN_HEALTH_BEFORE_DEATH = 10
 
     def __init__(self, position=[350.0, 350.0], arena=None):
         self.arena = arena
@@ -99,6 +107,7 @@ class Fighter:
         if not self.shot_bullet:
             self.shot_bullet = Bullet(self.direction, Fighter.DAMAGE_FACTOR * self.health, self)
             self.arena.bullets.append(self.shot_bullet)
+            self.health -= Fighter.DAMAGE_FACTOR * self.health
 
     # Moves towards current direction
     def move(self):
@@ -127,13 +136,13 @@ class Fighter:
 
     def shot(self, bullet):
         """Manages when the fighter gets shot by a bullet"""
-        self.health -= bullet.damage
+        self.health -= Fighter.SHOT_HEALTH_RATE*bullet.damage
 
 
 class Bullet:
     """This class might not be necessary, but it defines the type of ammunition used"""
 
-    SPEED = 20
+    SPEED = 15
 
     def __init__(self, direction, damage, scmf):
         self.dx = cos(radians(direction)) * Bullet.SPEED

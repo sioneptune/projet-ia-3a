@@ -14,6 +14,7 @@ GREEN = (0, 255, 0)
 YELLOW = (255, 255, 0)
 GREY = (100, 100, 100)
 
+MIN_SIZE = 15
 
 def pg_init():
     pygame.init()
@@ -47,14 +48,26 @@ def events(game, player, screen):
         player.shoot()
         print("shot")
 
-    for b in game.bullets:
-        if 700 >= b.position[0] >= 0 and 700 >= b.position[1] >=0:
+    """for b in game.bullets:
+        if 700 >= b.position[0] >= 0 and 700 >= b.position[1] >= 0:
             b.move()
             print("BULLET")
         else:
             game.bullets.remove(b)
             b.scmf.shot_bullet = None
-            print("BULLET GOT DED LOL")
+            print("BULLET GOT DED LOL")"""
+    for bullet in game.bullets:
+        if not (game.size >= bullet.position[0] >= 0 and game.size >= bullet.position[1] >= 0):
+            game.bullets.remove(bullet)
+            bullet.scmf.shot_bullet = None
+            del bullet
+        else:
+            bullet.move()
+            fighter = game.is_fighter(bullet.position, circle=True)
+            if fighter:
+                if fighter != bullet.scmf:
+                    print(fighter)
+                    game.fighter_hit(fighter, bullet)
 
 
 def run():
@@ -94,10 +107,9 @@ def run():
 
 def render(arena, screen):
     """Main render function"""
-    render_fighter(arena.fighters[0], screen, BLUE)
-    render_fighter(arena.fighters[1], screen, RED)
-    render_fighter(arena.fighters[2], screen, YELLOW)
-    render_fighter(arena.fighters[3], screen, GREEN)
+    list_color = [BLUE, RED, YELLOW, GREEN]
+    for i in range(len(arena.fighters)):
+        render_fighter(arena.fighters[i], screen, list_color[i])
 
     for bullet in arena.bullets:
         render_bullet(bullet, screen)
@@ -114,6 +126,7 @@ def render_fighter(f, screen, color):
 
 def render_bullet(b, screen):
     pygame.draw.ellipse(screen, BLACK, [b.position[0] - 5, b.position[1] - 5, 10, 10])
+
 
 if __name__ == '__main__':
     run()
