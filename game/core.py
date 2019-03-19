@@ -80,12 +80,12 @@ class Arena:
 class Fighter:
     """This class defines the fighters"""
     FORWARD_SPEED = 5
-    ROTATE_SPEED = 0.1
+    ROTATE_SPEED = 5
     DAMAGE_FACTOR = 0.05
     ROTATE_LEFT = 0
     ROTATE_RIGHT = 1
 
-    def __init__(self, position=(350.0, 350.0), arena=None):
+    def __init__(self, position=[350.0, 350.0], arena=None):
         self.arena = arena
         self.health = 100
         self.position = position
@@ -103,15 +103,15 @@ class Fighter:
     # Moves towards current direction
     def move(self):
         """RTFT"""
-        self.position[0] += Fighter.FORWARD_SPEED * cos(self.direction)
-        self.position[1] += Fighter.FORWARD_SPEED * sin(self.direction)
+        self.position[0] += Fighter.FORWARD_SPEED * cos(radians(self.direction))
+        self.position[1] += Fighter.FORWARD_SPEED * sin(radians(self.direction))
 
     # Changes direction
     def turn(self, side):
         """Takes in a 'side' (boolean)"""
         if self.change_dir_bool:
             if side == Fighter.ROTATE_LEFT:
-                self.direction += Fighter.ROTATE_SPEED
+                self.direction -= Fighter.ROTATE_SPEED
             else:
                 self.direction += Fighter.ROTATE_SPEED
 
@@ -139,7 +139,7 @@ class Bullet:
         self.dx = cos(radians(direction)) * Bullet.SPEED
         self.dy = sin(radians(direction)) * Bullet.SPEED
         self.damage = damage
-        self.position = scmf.position
+        self.position = list(scmf.position)
         self.scmf = scmf  # The stone-cold motherfucker who done fired this bullet
 
     def move(self):

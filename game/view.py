@@ -53,6 +53,7 @@ def events(game, player, screen):
             print("BULLET")
         else:
             game.bullets.remove(b)
+            b.scmf.shot_bullet = None
             print("BULLET GOT DED LOL")
 
 
@@ -62,11 +63,11 @@ def run():
     screen = pg_init()
 
     game = Arena()
-    player = Fighter((600, 600), game)
+    player = Fighter([600, 600], game)
     game.fighters.append(player)
-    game.fighters.append(Fighter((100, 100), game))
-    game.fighters.append(Fighter((600, 100), game))
-    game.fighters.append(Fighter((100, 600), game))
+    game.fighters.append(Fighter([100, 100], game))
+    game.fighters.append(Fighter([600, 100], game))
+    game.fighters.append(Fighter([100, 600], game))
 
     player.turn(False)
     player.move()
@@ -114,4 +115,5 @@ def render_fighter(f, screen, color):
 def render_bullet(b, screen):
     pygame.draw.ellipse(screen, BLACK, [b.position[0] - 5, b.position[1] - 5, 10, 10])
 
-run()
+if __name__ == '__main__':
+    run()
