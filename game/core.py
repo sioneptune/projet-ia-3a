@@ -68,9 +68,13 @@ class Arena:
             fighter.move()
         for bullet in self.bullets:
             bullet.move()
-            fighter = self.is_fighter(bullet.position, circle=True)
-            if fighter:
-                self.fighter_hit(fighter, bullet)
+            if not (self.size >= bullet.position[0] >= 0 and self.size >= bullet.position[1] >= 0):
+                self.bullets.remove(bullet)
+                del bullet
+            else:
+                fighter = self.is_fighter(bullet.position, circle=True)
+                if fighter:
+                    self.fighter_hit(fighter, bullet)
 
 
 class Fighter:
