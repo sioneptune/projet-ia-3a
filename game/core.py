@@ -62,6 +62,9 @@ class Arena:
     def run(self):
         """Queries the fighters for their action, makes movements for 1 frame"""
         for fighter in self.fighters:
+            if fighter.take_shoot_decision():
+                fighter.shoot()
+            fighter.take_move_decision()
             fighter.move()
         for bullet in self.bullets:
             bullet.move()
@@ -84,6 +87,7 @@ class Fighter:
         self.position = position
         self.direction = 0  # angle
         self.shot_bullet = None
+        self.change_dir_bool = True
 
     def shoot(self):
         """Shoots a bullet in the same direction as the fighter. Returns the said bullet/adds it to arena bullet list.
@@ -101,21 +105,20 @@ class Fighter:
     # Changes direction
     def turn(self, side):
         """Takes in a 'side' (boolean)"""
-        if side == Fighter.ROTATE_LEFT:
-            self.direction += Fighter.ROTATE_SPEED
-        else:
-            self.direction += Fighter.ROTATE_SPEED
+        if self.change_dir_bool:
+            if side == Fighter.ROTATE_LEFT:
+                self.direction += Fighter.ROTATE_SPEED
+            else:
+                self.direction += Fighter.ROTATE_SPEED
 
     def look(self):
         """Will look in a "cone" for enemies and bullets. If sees things, either adds them to NN or does shitty AI"""
-        # TODO
+        pass
 
     def take_move_decision(self):
-        # TODO
         pass
 
     def take_shoot_decision(self):
-        # TODO
         pass
 
     def shot(self, bullet):
