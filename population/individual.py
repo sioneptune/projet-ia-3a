@@ -46,6 +46,22 @@ class NaiveBot(Fighter):
             self.direction = not self.direction
             self.previous_distance_from_wall = dst[1]
 
+class Humanbot(Fighter):
+    """An implementation of fighter controlled by human inputs"""
+
+    def __init__(self):
+        self.human = True
+
+    def turn(self, side):
+        if side:
+            self.direction -= 5
+        else:
+            self.direction += 5
+
+    def move(self):
+
+        self.position = (self.position[0] + cos(self.direction), self.position[1] + sin(self.direction))
+
 
 class CleverBot(Fighter):
     def __init__(self, sizes, position=(350, 350), arena=None):

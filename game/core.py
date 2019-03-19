@@ -1,7 +1,7 @@
 #####
 # File containing the game infrastructure
 #####
-from math import cos, sin, pow
+from math import cos, sin, pow, radians
 
 
 class Arena:
@@ -85,7 +85,7 @@ class Fighter:
     ROTATE_LEFT = 0
     ROTATE_RIGHT = 1
 
-    def __init__(self, position=(350, 350), arena=None):
+    def __init__(self, position=(350.0, 350.0), arena=None):
         self.arena = arena
         self.health = 100
         self.position = position
@@ -136,8 +136,8 @@ class Bullet:
     SPEED = 20
 
     def __init__(self, direction, damage, scmf):
-        self.dx = cos(direction) * Bullet.SPEED
-        self.dy = sin(direction) * Bullet.SPEED
+        self.dx = cos(radians(direction)) * Bullet.SPEED
+        self.dy = sin(radians(direction)) * Bullet.SPEED
         self.damage = damage
         self.position = scmf.position
         self.scmf = scmf  # The stone-cold motherfucker who done fired this bullet
