@@ -9,11 +9,12 @@ class Bullet:
     """This class might not be necessary, but it defines the type of ammunition used"""
 
     SPEED = 15
+    MIN_DAMAGE = 5
 
     def __init__(self, direction, damage, scmf):
         self.dx = cos(radians(direction)) * Bullet.SPEED
         self.dy = sin(radians(direction)) * Bullet.SPEED
-        self.damage = damage
+        self.damage = damage if damage > Bullet.MIN_DAMAGE else Bullet.MIN_DAMAGE
         self.position = list(scmf.position)
         self.scmf = scmf  # The stone-cold motherfucker who done fired this bullet
 
@@ -30,6 +31,7 @@ class Fighter:
     ROTATE_LEFT = 0
     ROTATE_RIGHT = 1
     SHOT_HEALTH_RATE = 5
+    MIN_HEALTH = 20
 
     def __init__(self, position, arena=None):
         self.arena = arena
@@ -38,11 +40,12 @@ class Fighter:
         self.direction = 0  # angle
         self.shot_bullet = None
         self.change_dir_bool = True
+        self.kills = 0
 
     def shoot(self):
         """Shoots a bullet in the same direction as the fighter. Returns the said bullet/adds it to arena bullet list.
             Only shoots if no shot bullet is currently alive (eg shotbullet==None)"""
-        if not self.shot_bullet:
+        if not self.shot_bullet and self.health > Fighter.MIN_HEALTH:
             self.shot_bullet = Bullet(self.direction, Fighter.DAMAGE_FACTOR * self.health, self)
             self.arena.bullets.append(self.shot_bullet)
             self.health -= Fighter.DAMAGE_FACTOR * self.health

@@ -36,10 +36,10 @@ def events(game, player, screen):
         player.turn(True)
         print("turned right")
         print(player.direction)
-    if keys[pygame.K_UP]:
-        player.move()
-        print("moved")
-        print(player.position)
+    # if keys[pygame.K_UP]:             Not used anymore, the bots move automatically every tick
+    #    player.move()
+    #    print("moved")
+    #    print(player.position)
     if keys[pygame.K_g]:
         player.health += 10
     if keys[pygame.K_s]:
@@ -47,6 +47,8 @@ def events(game, player, screen):
     if keys[pygame.K_f]:
         player.shoot()
         print("shot")
+    if keys[pygame.K_k]:
+        game.fighter_down(fighter=game.fighters[2], killer=player)
 
     """for b in game.bullets:
         if 700 >= b.position[0] >= 0 and 700 >= b.position[1] >= 0:
