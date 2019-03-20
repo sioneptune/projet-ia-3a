@@ -1,12 +1,17 @@
 #####
 # File containing the game infrastructure
 #####
-from math import cos, sin, pow
+from math import cos, sin, pow, radians
 
 
 class Arena:
     """This class defines the arena where things will fight"""
     MAX_FIGHTERS = 4
+    FIGHTER_RADIUS_HEALTH_RATE = 4
+    UP_SIDE = 0
+    RIGHT_SIDE = 1
+    DOWN_SIDE = 2
+    LEFT_SIDE = 3
 
     def __init__(self):
         self.size = 700
@@ -14,10 +19,12 @@ class Arena:
         self.bullets = []
 
     def is_fighter(self, pos, offset=0, circle=False):
-        # Note du programmeur adjoint: je suis éthiquement opposé à la ligne suivante
         if circle:
             for fighter in self.fighters:
-                if pow(pos[0] - fighter.position[0], 2) + pow(pos[1] - fighter.position[1], 2) < pow(fighter.health, 2):
+                a = pow(pos[0] - fighter.position[0], 2)
+                b = pow(pos[1] - fighter.position[1], 2)
+                c = pow(fighter.health/4, 2)
+                if a + b < c:
                     return fighter
             return None
 
@@ -45,7 +52,8 @@ class Arena:
 
     def fighter_hit(self, fighter, bullet):
         """Manages when a bullet hits the fighter. Removes health, and if h<0, calls fighter_down"""
-        if bullet.damage >= fighter.health:
+        if bullet.damage * Fighter.SHOT_HEALTH_RATE >= fighter.health:
+            print("a fighter should be down")
             self.fighter_down(fighter, bullet.scmf, fighter.health)
         else:
             fighter.shot(bullet)
@@ -56,6 +64,7 @@ class Arena:
     def fighter_down(self, fighter, killer, health):
         """Manages a death. Removes fighter from list, gives health to the killer (fighter obj)"""
         killer.health += health
+        fighter.health = 0
         self.fighters.remove(fighter)
         del fighter
 
@@ -64,28 +73,54 @@ class Arena:
         for fighter in self.fighters:
             if fighter.take_shoot_decision():
                 fighter.shoot()
-            fighter.take_move_decision()
             fighter.move()
+            # Manages cases where the fighter is out of the arena
+            self.fighter_out_of_arena(fighter)
         for bullet in self.bullets:
             bullet.move()
             if not (self.size >= bullet.position[0] >= 0 and self.size >= bullet.position[1] >= 0):
                 self.bullets.remove(bullet)
+                bullet.scmf.shot_bullet = None
                 del bullet
             else:
                 fighter = self.is_fighter(bullet.position, circle=True)
                 if fighter:
-                    self.fighter_hit(fighter, bullet)
+                    if fighter != bullet.scmf:
+                        self.fighter_hit(fighter, bullet)
+
+    def fighter_out_of_arena(self, fighter):
+        """ Checks if the fighter is out of arena, calls replace_fighter_in_arena if so"""
+        if fighter.position[0] + fighter.health/4 >= self.size:
+            self.replace_fighter_in_arena(fighter, Arena.RIGHT_SIDE)
+        if fighter.position[0] - fighter.health/4 <= 0:
+            self.replace_fighter_in_arena(fighter, Arena.LEFT_SIDE)
+        if fighter.position[1] + fighter.health/4 >= self.size:
+            self.replace_fighter_in_arena(fighter, Arena.DOWN_SIDE)
+        if fighter.position[1] - fighter.health/4 <= 0:
+            self.replace_fighter_in_arena(fighter, Arena.UP_SIDE)
+
+    def replace_fighter_in_arena(self, fighter, side):
+        """ Replaces the given fighter in the arena (against a wall) """
+        if side == Arena.RIGHT_SIDE:
+            fighter.position[0] += self.size - (fighter.position[0] + fighter.health/4)
+        if side == Arena.LEFT_SIDE:
+            fighter.position[0] += 0 - (fighter.position[0] - fighter.health/4)
+        if side == Arena.DOWN_SIDE:
+            fighter.position[1] += self.size - (fighter.position[1] + fighter.health / 4)
+        if side == Arena.UP_SIDE:
+            fighter.position[1] += 0 - (fighter.position[1] - fighter.health/4)
 
 
 class Fighter:
     """This class defines the fighters"""
     FORWARD_SPEED = 5
-    ROTATE_SPEED = 0.1
+    ROTATE_SPEED = 5
     DAMAGE_FACTOR = 0.05
     ROTATE_LEFT = 0
     ROTATE_RIGHT = 1
+    SHOT_HEALTH_RATE = 5
 
-    def __init__(self, position=(350, 350), arena=None):
+    def __init__(self, position, arena=None):
         self.arena = arena
         self.health = 100
         self.position = position
@@ -99,19 +134,20 @@ class Fighter:
         if not self.shot_bullet:
             self.shot_bullet = Bullet(self.direction, Fighter.DAMAGE_FACTOR * self.health, self)
             self.arena.bullets.append(self.shot_bullet)
+            self.health -= Fighter.DAMAGE_FACTOR * self.health
 
     # Moves towards current direction
     def move(self):
         """RTFT"""
-        self.position[0] += Fighter.FORWARD_SPEED * cos(self.direction)
-        self.position[1] += Fighter.FORWARD_SPEED * sin(self.direction)
+        self.position[0] += Fighter.FORWARD_SPEED * cos(radians(self.direction))
+        self.position[1] += Fighter.FORWARD_SPEED * sin(radians(self.direction))
 
     # Changes direction
     def turn(self, side):
         """Takes in a 'side' (boolean)"""
         if self.change_dir_bool:
             if side == Fighter.ROTATE_LEFT:
-                self.direction += Fighter.ROTATE_SPEED
+                self.direction -= Fighter.ROTATE_SPEED
             else:
                 self.direction += Fighter.ROTATE_SPEED
 
@@ -127,19 +163,19 @@ class Fighter:
 
     def shot(self, bullet):
         """Manages when the fighter gets shot by a bullet"""
-        self.health -= bullet.damage
+        self.health -= Fighter.SHOT_HEALTH_RATE*bullet.damage
 
 
 class Bullet:
     """This class might not be necessary, but it defines the type of ammunition used"""
 
-    SPEED = 20
+    SPEED = 15
 
     def __init__(self, direction, damage, scmf):
-        self.dx = cos(direction) * Bullet.SPEED
-        self.dy = sin(direction) * Bullet.SPEED
+        self.dx = cos(radians(direction)) * Bullet.SPEED
+        self.dy = sin(radians(direction)) * Bullet.SPEED
         self.damage = damage
-        self.position = scmf.position
+        self.position = list(scmf.position)
         self.scmf = scmf  # The stone-cold motherfucker who done fired this bullet
 
     def move(self):

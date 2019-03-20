@@ -3,14 +3,14 @@
 #####
 from game.core import Fighter
 from random import randint
-from math import cos, sin
+from math import cos, sin, radians
 import numpy as np
 
 
 class NaiveBot(Fighter):
-    def __init__(self, position=(350, 350), arena=None):
-        Fighter.__init__(position, arena)
-        self.direction = randint(0, 1)
+    def __init__(self, position, arena=None):
+        Fighter.__init__(self, position, arena)
+        self.direction = 0
         self.previous_distance_from_enemy = 9000
         self.previous_distance_from_wall = 9000
 
@@ -26,11 +26,11 @@ class NaiveBot(Fighter):
         returns false and the distance from the wall if no enemy was found"""
         # Partner's disapproval : 6666666666666666666666666666666666666666666666666666666666666666 / 20
         Trou = True
-        cur_pos = self.position
+        cur_pos = list(self.position)
         distance = 0
         while self.arena.size > cur_pos[0] > 0 and self.arena.size > cur_pos[1] > 0:
-            cur_pos[0] += cos(self.direction)
-            cur_pos[1] += sin(self.direction)
+            cur_pos[0] += cos(radians(self.direction))
+            cur_pos[1] += sin(radians(self.direction))
             distance += 1
             if self.arena.is_fighter(cur_pos, circle=True) != self:
                 return [Trou, distance]
@@ -47,9 +47,26 @@ class NaiveBot(Fighter):
             self.previous_distance_from_wall = dst[1]
 
 
+class Humanbot(Fighter):
+    """An implementation of fighter controlled by human inputs"""
+    def __init__(self, position=(350, 350), arena=None):
+        Fighter.__init__(self, position=position, arena=arena)
+        self.human = True
+
+    def turn(self, side):
+        if side:
+            self.direction -= 5
+        else:
+            self.direction += 5
+
+    def move(self):
+
+        self.position = (self.position[0] + cos(self.direction), self.position[1] + sin(self.direction))
+
+
 class CleverBot(Fighter):
     def __init__(self, sizes, position=(350, 350), arena=None):
-        Fighter.__init__(position=position, arena=arena)
+        Fighter.__init__(self, position=position, arena=arena)
         self.brain = NeuralNetwork(sizes)
         # Format: [move, shoot]
         self.decisions = [0, 0]
@@ -71,6 +88,7 @@ class CleverBot(Fighter):
 
     def look(self):
         pass
+
 
 class NeuralNetwork:
     """ Codes a rally basic neural network with numpy"""
@@ -100,6 +118,7 @@ class NeuralNetwork:
                 decisions[0] = -1 if move_left > move_right else 1
         decisions[1] = 1 if shoot >= 0.5 else 0
         return decisions
+
 
 def sigmoid(z):
     """RTFT"""
