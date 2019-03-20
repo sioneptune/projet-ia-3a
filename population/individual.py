@@ -1,10 +1,80 @@
 #####
 # Representation of an individual playing the game
 #####
-from game.core import Fighter
-from random import randint
 from math import cos, sin, radians
 import numpy as np
+
+
+class Bullet:
+    """This class might not be necessary, but it defines the type of ammunition used"""
+
+    SPEED = 15
+
+    def __init__(self, direction, damage, scmf):
+        self.dx = cos(radians(direction)) * Bullet.SPEED
+        self.dy = sin(radians(direction)) * Bullet.SPEED
+        self.damage = damage
+        self.position = list(scmf.position)
+        self.scmf = scmf  # The stone-cold motherfucker who done fired this bullet
+
+    def move(self):
+        """Manages the bullet's displacement"""
+        self.position[0] += self.dx
+        self.position[1] += self.dy
+
+class Fighter:
+    """This class defines the fighters"""
+    FORWARD_SPEED = 5
+    ROTATE_SPEED = 5
+    DAMAGE_FACTOR = 0.05
+    ROTATE_LEFT = 0
+    ROTATE_RIGHT = 1
+    SHOT_HEALTH_RATE = 5
+
+    def __init__(self, position, arena=None):
+        self.arena = arena
+        self.health = 100
+        self.position = position
+        self.direction = 0  # angle
+        self.shot_bullet = None
+        self.change_dir_bool = True
+
+    def shoot(self):
+        """Shoots a bullet in the same direction as the fighter. Returns the said bullet/adds it to arena bullet list.
+            Only shoots if no shot bullet is currently alive (eg shotbullet==None)"""
+        if not self.shot_bullet:
+            self.shot_bullet = Bullet(self.direction, Fighter.DAMAGE_FACTOR * self.health, self)
+            self.arena.bullets.append(self.shot_bullet)
+            self.health -= Fighter.DAMAGE_FACTOR * self.health
+
+    # Moves towards current direction
+    def move(self):
+        """RTFT"""
+        self.position[0] += Fighter.FORWARD_SPEED * cos(radians(self.direction))
+        self.position[1] += Fighter.FORWARD_SPEED * sin(radians(self.direction))
+
+    # Changes direction
+    def turn(self, side):
+        """Takes in a 'side' (boolean)"""
+        if self.change_dir_bool:
+            if side == Fighter.ROTATE_LEFT:
+                self.direction -= Fighter.ROTATE_SPEED
+            else:
+                self.direction += Fighter.ROTATE_SPEED
+
+    def look(self):
+        """Will look in a "cone" for enemies and bullets. If sees things, either adds them to NN or does shitty AI"""
+        pass
+
+    def take_move_decision(self):
+        pass
+
+    def take_shoot_decision(self):
+        pass
+
+    def shot(self, bullet):
+        """Manages when the fighter gets shot by a bullet"""
+        self.health -= Fighter.SHOT_HEALTH_RATE*bullet.damage
 
 
 class NaiveBot(Fighter):
@@ -17,7 +87,7 @@ class NaiveBot(Fighter):
     def take_shoot_decision(self):
         """Shoots if enemy is less than 100 [distance unit] away"""
         dst_from_target = self.look()
-        if dst_from_target[0] and dst_from_target[1] < 100:
+        if dst_from_target[0] and 0 < dst_from_target[1] < 100:
             return True
         return False
 
@@ -32,18 +102,21 @@ class NaiveBot(Fighter):
             cur_pos[0] += cos(radians(self.direction))
             cur_pos[1] += sin(radians(self.direction))
             distance += 1
-            if self.arena.is_fighter(cur_pos, circle=True) != self:
+            other_fighter = self.arena.is_fighter(cur_pos, circle=True)
+            if other_fighter and other_fighter != self:
                 return [Trou, distance]
         return [False, distance]
 
     def take_move_decision(self):
         """Tries to get closer to enemies and further from walls"""
         dst = self.look()
-        if dst[0] and dst[1] > self.previous_distance_from_enemy:
-            self.direction = not self.direction
+        if dst[0]:
+            if dst[1] > self.previous_distance_from_enemy:
+                self.direction = not self.direction
             self.previous_distance_from_enemy = dst[1]
-        elif not dst[0] and dst[1] < self.previous_distance_from_wall:
-            self.direction = not self.direction
+        else:
+            if dst[1] < self.previous_distance_from_wall:
+                self.direction = not self.direction
             self.previous_distance_from_wall = dst[1]
 
 

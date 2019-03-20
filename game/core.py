@@ -2,8 +2,7 @@
 # File containing the game infrastructure
 #####
 from math import cos, sin, pow, radians
-
-
+from population.individual import *
 class Arena:
     """This class defines the arena where things will fight"""
     MAX_FIGHTERS = 4
@@ -73,6 +72,8 @@ class Arena:
         for fighter in self.fighters:
             if fighter.take_shoot_decision():
                 fighter.shoot()
+            if isinstance(fighter, NaiveBot):
+                fighter.take_move_decision()
             fighter.move()
             # Manages cases where the fighter is out of the arena
             self.fighter_out_of_arena(fighter)
@@ -111,74 +112,7 @@ class Arena:
             fighter.position[1] += 0 - (fighter.position[1] - fighter.health/4)
 
 
-class Fighter:
-    """This class defines the fighters"""
-    FORWARD_SPEED = 5
-    ROTATE_SPEED = 5
-    DAMAGE_FACTOR = 0.05
-    ROTATE_LEFT = 0
-    ROTATE_RIGHT = 1
-    SHOT_HEALTH_RATE = 5
-
-    def __init__(self, position, arena=None):
-        self.arena = arena
-        self.health = 100
-        self.position = position
-        self.direction = 0  # angle
-        self.shot_bullet = None
-        self.change_dir_bool = True
-
-    def shoot(self):
-        """Shoots a bullet in the same direction as the fighter. Returns the said bullet/adds it to arena bullet list.
-            Only shoots if no shot bullet is currently alive (eg shotbullet==None)"""
-        if not self.shot_bullet:
-            self.shot_bullet = Bullet(self.direction, Fighter.DAMAGE_FACTOR * self.health, self)
-            self.arena.bullets.append(self.shot_bullet)
-            self.health -= Fighter.DAMAGE_FACTOR * self.health
-
-    # Moves towards current direction
-    def move(self):
-        """RTFT"""
-        self.position[0] += Fighter.FORWARD_SPEED * cos(radians(self.direction))
-        self.position[1] += Fighter.FORWARD_SPEED * sin(radians(self.direction))
-
-    # Changes direction
-    def turn(self, side):
-        """Takes in a 'side' (boolean)"""
-        if self.change_dir_bool:
-            if side == Fighter.ROTATE_LEFT:
-                self.direction -= Fighter.ROTATE_SPEED
-            else:
-                self.direction += Fighter.ROTATE_SPEED
-
-    def look(self):
-        """Will look in a "cone" for enemies and bullets. If sees things, either adds them to NN or does shitty AI"""
-        pass
-
-    def take_move_decision(self):
-        pass
-
-    def take_shoot_decision(self):
-        pass
-
-    def shot(self, bullet):
-        """Manages when the fighter gets shot by a bullet"""
-        self.health -= Fighter.SHOT_HEALTH_RATE*bullet.damage
 
 
-class Bullet:
-    """This class might not be necessary, but it defines the type of ammunition used"""
 
-    SPEED = 15
 
-    def __init__(self, direction, damage, scmf):
-        self.dx = cos(radians(direction)) * Bullet.SPEED
-        self.dy = sin(radians(direction)) * Bullet.SPEED
-        self.damage = damage
-        self.position = list(scmf.position)
-        self.scmf = scmf  # The stone-cold motherfucker who done fired this bullet
-
-    def move(self):
-        """Manages the bullet's displacement"""
-        self.position[0] += self.dx
-        self.position[1] += self.dy
