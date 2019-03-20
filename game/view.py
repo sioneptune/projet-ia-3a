@@ -4,6 +4,7 @@
 
 import pygame
 from game.core import Arena, Fighter, Bullet
+from population.individual import NaiveBot
 from math import cos, sin, radians
 
 WHITE = (255, 255, 255)
@@ -14,7 +15,6 @@ GREEN = (0, 255, 0)
 YELLOW = (255, 255, 0)
 GREY = (100, 100, 100)
 
-MIN_SIZE = 15
 
 def pg_init():
     pygame.init()
@@ -56,7 +56,7 @@ def events(game, player, screen):
             game.bullets.remove(b)
             b.scmf.shot_bullet = None
             print("BULLET GOT DED LOL")"""
-    for bullet in game.bullets:
+    """for bullet in game.bullets:
         if not (game.size >= bullet.position[0] >= 0 and game.size >= bullet.position[1] >= 0):
             game.bullets.remove(bullet)
             bullet.scmf.shot_bullet = None
@@ -67,7 +67,7 @@ def events(game, player, screen):
             if fighter:
                 if fighter != bullet.scmf:
                     print(fighter)
-                    game.fighter_hit(fighter, bullet)
+                    game.fighter_hit(fighter, bullet)"""
 
 
 def run():
@@ -78,9 +78,9 @@ def run():
     game = Arena()
     player = Fighter([600, 600], game)
     game.fighters.append(player)
-    game.fighters.append(Fighter([100, 100], game))
-    game.fighters.append(Fighter([600, 100], game))
-    game.fighters.append(Fighter([100, 600], game))
+    game.fighters.append(NaiveBot(position=[100, 100], arena=game))
+    game.fighters.append(NaiveBot(position=[600, 100], arena=game))
+    game.fighters.append(NaiveBot(position=[100, 600], arena=game))
 
     player.turn(False)
     player.move()
@@ -94,7 +94,7 @@ def run():
         events(game, player, screen)
 
         # Game logic goes here
-
+        game.run()
         # Draw all the stuff
         screen.fill(GREY)
         render(game, screen)

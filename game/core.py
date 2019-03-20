@@ -7,6 +7,11 @@ from math import cos, sin, pow, radians
 class Arena:
     """This class defines the arena where things will fight"""
     MAX_FIGHTERS = 4
+    FIGHTER_RADIUS_HEALTH_RATE = 4
+    UP_SIDE = 0
+    RIGHT_SIDE = 1
+    DOWN_SIDE = 2
+    LEFT_SIDE = 3
 
     def __init__(self):
         self.size = 700
@@ -14,7 +19,6 @@ class Arena:
         self.bullets = []
 
     def is_fighter(self, pos, offset=0, circle=False):
-        # Note du programmeur adjoint: je suis éthiquement opposé à la ligne suivante
         if circle:
             for fighter in self.fighters:
                 a = pow(pos[0] - fighter.position[0], 2)
@@ -69,18 +73,42 @@ class Arena:
         for fighter in self.fighters:
             if fighter.take_shoot_decision():
                 fighter.shoot()
-            fighter.take_move_decision()
             fighter.move()
+            # Manages cases where the fighter is out of the arena
+            self.fighter_out_of_arena(fighter)
         for bullet in self.bullets:
             bullet.move()
             if not (self.size >= bullet.position[0] >= 0 and self.size >= bullet.position[1] >= 0):
                 self.bullets.remove(bullet)
+                bullet.scmf.shot_bullet = None
                 del bullet
             else:
                 fighter = self.is_fighter(bullet.position, circle=True)
                 if fighter:
                     if fighter != bullet.scmf:
                         self.fighter_hit(fighter, bullet)
+
+    def fighter_out_of_arena(self, fighter):
+        """ Checks if the fighter is out of arena, calls replace_fighter_in_arena if so"""
+        if fighter.position[0] + fighter.health/4 >= self.size:
+            self.replace_fighter_in_arena(fighter, Arena.RIGHT_SIDE)
+        if fighter.position[0] - fighter.health/4 <= 0:
+            self.replace_fighter_in_arena(fighter, Arena.LEFT_SIDE)
+        if fighter.position[1] + fighter.health/4 >= self.size:
+            self.replace_fighter_in_arena(fighter, Arena.DOWN_SIDE)
+        if fighter.position[1] - fighter.health/4 <= 0:
+            self.replace_fighter_in_arena(fighter, Arena.UP_SIDE)
+
+    def replace_fighter_in_arena(self, fighter, side):
+        """ Replaces the given fighter in the arena (against a wall) """
+        if side == Arena.RIGHT_SIDE:
+            fighter.position[0] += self.size - (fighter.position[0] + fighter.health/4)
+        if side == Arena.LEFT_SIDE:
+            fighter.position[0] += 0 - (fighter.position[0] - fighter.health/4)
+        if side == Arena.DOWN_SIDE:
+            fighter.position[1] += self.size - (fighter.position[1] + fighter.health / 4)
+        if side == Arena.UP_SIDE:
+            fighter.position[1] += 0 - (fighter.position[1] - fighter.health/4)
 
 
 class Fighter:
@@ -91,9 +119,8 @@ class Fighter:
     ROTATE_LEFT = 0
     ROTATE_RIGHT = 1
     SHOT_HEALTH_RATE = 5
-    MIN_HEALTH_BEFORE_DEATH = 10
 
-    def __init__(self, position=[350.0, 350.0], arena=None):
+    def __init__(self, position, arena=None):
         self.arena = arena
         self.health = 100
         self.position = position
