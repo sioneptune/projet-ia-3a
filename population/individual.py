@@ -8,7 +8,7 @@ import numpy as np
 class Bullet:
     """This class might not be necessary, but it defines the type of ammunition used"""
 
-    SPEED = 15
+    SPEED = 5
 
     def __init__(self, direction, damage, scmf):
         self.dx = cos(radians(direction)) * Bullet.SPEED

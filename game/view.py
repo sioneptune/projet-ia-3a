@@ -34,6 +34,8 @@ def events(game, player, screen):
         player.turn(True)
     if keys[pygame.K_UP]:
         player.move()
+        player.move()
+        player.move()
     if keys[pygame.K_g]:
         player.health += 10
     if keys[pygame.K_s]:
