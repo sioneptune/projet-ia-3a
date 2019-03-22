@@ -30,23 +30,16 @@ def events(game, player, screen):
     keys = pygame.key.get_pressed()
     if keys[pygame.K_LEFT]:
         player.turn(False)
-        print("pressed left")
-        print(player.direction)
     if keys[pygame.K_RIGHT]:
         player.turn(True)
-        print("turned right")
-        print(player.direction)
     if keys[pygame.K_UP]:
         player.move()
-        print("moved")
-        print(player.position)
     if keys[pygame.K_g]:
         player.health += 10
     if keys[pygame.K_s]:
         player.health -= 10
     if keys[pygame.K_f]:
         player.shoot()
-        print("shot")
 
     """for b in game.bullets:
         if 700 >= b.position[0] >= 0 and 700 >= b.position[1] >= 0:
@@ -76,11 +69,11 @@ def run():
     screen = pg_init()
 
     game = Arena()
-    player = Fighter([600, 600], game)
+    player = Fighter([600, 600], arena=game)
     game.fighters.append(player)
-    game.fighters.append(NaiveBot(position=[100, 100], arena=game))
-    game.fighters.append(NaiveBot(position=[600, 100], arena=game))
-    game.fighters.append(NaiveBot(position=[100, 600], arena=game))
+    game.fighters.append(NaiveBot(position=[100, 100], direction=45, arena=game))
+    game.fighters.append(NaiveBot(position=[600, 100], direction=135, arena=game))
+    game.fighters.append(NaiveBot(position=[100, 600], direction=-45, arena=game))
 
     player.turn(False)
     player.move()

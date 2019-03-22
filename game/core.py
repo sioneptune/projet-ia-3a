@@ -56,6 +56,7 @@ class Arena:
             self.fighter_down(fighter, bullet.scmf, fighter.health)
         else:
             fighter.shot(bullet)
+            bullet.scmf.health += 2*bullet.damage
         bullet.scmf.shot_bullet = None
         self.bullets.remove(bullet)
         del bullet
@@ -74,6 +75,7 @@ class Arena:
                 fighter.shoot()
             if isinstance(fighter, NaiveBot):
                 fighter.take_move_decision()
+                fighter.turn(fighter.move_decision)
             fighter.move()
             # Manages cases where the fighter is out of the arena
             self.fighter_out_of_arena(fighter)
