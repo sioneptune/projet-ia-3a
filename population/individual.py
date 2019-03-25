@@ -23,9 +23,10 @@ class Bullet:
         self.position[0] += self.dx
         self.position[1] += self.dy
 
+
 class Fighter:
     """This class defines the fighters"""
-    FORWARD_SPEED = 5
+    FORWARD_SPEED = 1
     ROTATE_SPEED = 5
     DAMAGE_FACTOR = 0.05
     ROTATE_LEFT = 0
@@ -33,11 +34,11 @@ class Fighter:
     SHOT_HEALTH_RATE = 5
     MIN_HEALTH = 20
 
-    def __init__(self, position, arena=None):
+    def __init__(self, position, direction=0, arena=None):
         self.arena = arena
         self.health = 100
         self.position = position
-        self.direction = 0  # angle
+        self.direction = direction  # angle
         self.shot_bullet = None
         self.change_dir_bool = True
         self.kills = 0
@@ -81,16 +82,18 @@ class Fighter:
 
 
 class NaiveBot(Fighter):
-    def __init__(self, position, arena=None):
-        Fighter.__init__(self, position, arena)
-        self.direction = 0
+    def __init__(self, position, direction=0, arena=None):
+        Fighter.__init__(self, position, direction=direction, arena=arena)
+        self.direction = direction
         self.previous_distance_from_enemy = 9000
         self.previous_distance_from_wall = 9000
+        self.move_decision_cooldown = 0
+        self.move_decision = Fighter.ROTATE_RIGHT
 
     def take_shoot_decision(self):
         """Shoots if enemy is less than 100 [distance unit] away"""
         dst_from_target = self.look()
-        if dst_from_target[0] and 0 < dst_from_target[1] < 100:
+        if dst_from_target[0] and 0 < dst_from_target[1] < 400:
             return True
         return False
 
@@ -112,15 +115,19 @@ class NaiveBot(Fighter):
 
     def take_move_decision(self):
         """Tries to get closer to enemies and further from walls"""
-        dst = self.look()
-        if dst[0]:
-            if dst[1] > self.previous_distance_from_enemy:
-                self.direction = not self.direction
-            self.previous_distance_from_enemy = dst[1]
+        if self.move_decision_cooldown == 0:
+            dst = self.look()
+            if dst[0]:
+                if dst[1] > self.previous_distance_from_enemy:
+                    self.move_decision = Fighter.ROTATE_RIGHT if self.move_decision == Fighter.ROTATE_LEFT else Fighter.ROTATE_LEFT
+                self.previous_distance_from_enemy = dst[1]
+            else:
+                if dst[1] < self.previous_distance_from_wall and dst[1] < 100:
+                    self.move_decision = Fighter.ROTATE_RIGHT if self.move_decision == Fighter.ROTATE_LEFT else Fighter.ROTATE_LEFT
+                    self.move_decision_cooldown = 5
+                self.previous_distance_from_wall = dst[1]
         else:
-            if dst[1] < self.previous_distance_from_wall:
-                self.direction = not self.direction
-            self.previous_distance_from_wall = dst[1]
+            self.move_decision_cooldown -= 1
 
 
 class Humanbot(Fighter):
