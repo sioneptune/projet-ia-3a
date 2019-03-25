@@ -26,16 +26,16 @@ class Arena:
             for fighter in self.fighters:
                 a = pow(pos[0] - fighter.position[0], 2)
                 b = pow(pos[1] - fighter.position[1], 2)
-                c = pow(fighter.health/4, 2)
+                c = pow(fighter.size/4, 2)
                 if a + b < c:
                     return fighter
             return None
 
         for fighter in self.fighters:
-            cond_up_left = pos[0] + offset >= fighter.position[0] - fighter.health and pos[1] + offset >= fighter.position[1] - fighter.health
-            cond_down_left = pos[0] + offset >= fighter.position[0] - fighter.health and pos[1] - offset <= fighter.position[1] + fighter.health
-            cond_up_right = pos[0] - offset <= fighter.position[0] + fighter.health and pos[1] + offset >= fighter.position[1] - fighter.health
-            cond_down_right = pos[0] - offset <= fighter.position[0] + fighter.health and pos[1] - offset <= fighter.position[1] + fighter.health
+            cond_up_left = pos[0] + offset >= fighter.position[0] - fighter.size and pos[1] + offset >= fighter.position[1] - fighter.size
+            cond_down_left = pos[0] + offset >= fighter.position[0] - fighter.size and pos[1] - offset <= fighter.position[1] + fighter.size
+            cond_up_right = pos[0] - offset <= fighter.position[0] + fighter.size and pos[1] + offset >= fighter.position[1] - fighter.size
+            cond_down_right = pos[0] - offset <= fighter.position[0] + fighter.size and pos[1] - offset <= fighter.position[1] + fighter.size
             if cond_down_left or cond_up_left or cond_up_right or cond_down_right:
                 return fighter
         return None
@@ -67,7 +67,7 @@ class Arena:
 
     def fighter_down(self, fighter, killer):
         """Manages a death. Removes fighter from list, gives health to the killer (fighter obj)"""
-        killer.health += Arena.KILL_SCORE
+        killer.heal(Arena.KILL_SCORE)
         fighter.health = 0
         self.fighters.remove(fighter)
         print(self.fighters)
@@ -98,22 +98,22 @@ class Arena:
 
     def fighter_out_of_arena(self, fighter):
         """ Checks if the fighter is out of arena, calls replace_fighter_in_arena if so"""
-        if fighter.position[0] + fighter.health/4 >= self.size:
+        if fighter.position[0] + fighter.size/4 >= self.size:
             self.replace_fighter_in_arena(fighter, Arena.RIGHT_SIDE)
-        if fighter.position[0] - fighter.health/4 <= 0:
+        if fighter.position[0] - fighter.size/4 <= 0:
             self.replace_fighter_in_arena(fighter, Arena.LEFT_SIDE)
-        if fighter.position[1] + fighter.health/4 >= self.size:
+        if fighter.position[1] + fighter.size/4 >= self.size:
             self.replace_fighter_in_arena(fighter, Arena.DOWN_SIDE)
-        if fighter.position[1] - fighter.health/4 <= 0:
+        if fighter.position[1] - fighter.size/4 <= 0:
             self.replace_fighter_in_arena(fighter, Arena.UP_SIDE)
 
     def replace_fighter_in_arena(self, fighter, side):
         """ Replaces the given fighter in the arena (against a wall) """
         if side == Arena.RIGHT_SIDE:
-            fighter.position[0] += self.size - (fighter.position[0] + fighter.health/4)
+            fighter.position[0] += self.size - (fighter.position[0] + fighter.size/4)
         if side == Arena.LEFT_SIDE:
-            fighter.position[0] += 0 - (fighter.position[0] - fighter.health/4)
+            fighter.position[0] += 0 - (fighter.position[0] - fighter.size/4)
         if side == Arena.DOWN_SIDE:
-            fighter.position[1] += self.size - (fighter.position[1] + fighter.health / 4)
+            fighter.position[1] += self.size - (fighter.position[1] + fighter.size / 4)
         if side == Arena.UP_SIDE:
-            fighter.position[1] += 0 - (fighter.position[1] - fighter.health/4)
+            fighter.position[1] += 0 - (fighter.position[1] - fighter.size/4)

@@ -39,9 +39,9 @@ def events(game, player):
         player.move()
         player.move()
     if keys[pygame.K_g]:
-        player.health += 10
+        player.heal(10)
     if keys[pygame.K_s]:
-        player.health -= 10
+        player.remove_health_manually(10)
     if keys[pygame.K_f]:
         player.shoot()
         print("shot")
@@ -117,11 +117,11 @@ def render(arena, screen):
 
 def render_fighter(f, screen, color):
     """RTFT"""
-    renderbox = [f.position[0]-f.health/4, f.position[1]-f.health/4, f.health/2, f.health/2]
+    renderbox = [f.position[0]-f.size/4, f.position[1]-f.size/4, f.size/2, f.size/2]
     pygame.draw.ellipse(screen, color, renderbox)
-    pygame.draw.line(screen, BLACK, list(f.position), [f.position[0] + f.health/3 * cos(radians(f.direction)),
-                                                       f.position[1] + f.health/3 * sin(radians(f.direction))],
-                     int(f.health/20))
+    pygame.draw.line(screen, BLACK, list(f.position), [f.position[0] + f.size/3 * cos(radians(f.direction)),
+                                                       f.position[1] + f.size/3 * sin(radians(f.direction))],
+                     int(f.size/20))
 
 
 def render_bullet(b, screen):

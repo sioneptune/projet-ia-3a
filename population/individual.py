@@ -33,10 +33,12 @@ class Fighter:
     ROTATE_RIGHT = 1
     SHOT_HEALTH_RATE = 5
     MIN_HEALTH = 20
+    MIN_SIZE = 20
 
     def __init__(self, position, direction=0, arena=None):
         self.arena = arena
         self.health = 100
+        self.size = 100
         self.position = position
         self.direction = direction  # angle
         self.shot_bullet = None
@@ -50,6 +52,15 @@ class Fighter:
             self.shot_bullet = Bullet(self.direction, Fighter.DAMAGE_FACTOR * self.health, self)
             self.arena.bullets.append(self.shot_bullet)
             self.health -= Fighter.DAMAGE_FACTOR * self.health
+            self.size = self.health if self.health > Fighter.MIN_SIZE else Fighter.MIN_SIZE
+
+    def heal(self, health):
+        self.health += health
+        self.size = self.health if self.health > Fighter.MIN_SIZE else Fighter.MIN_SIZE
+
+    def remove_health_manually(self, amount):
+        self.health -= amount
+        self.size = self.health if self.health > Fighter.MIN_SIZE else Fighter.MIN_SIZE
 
     # Moves towards current direction
     def move(self):
@@ -79,6 +90,7 @@ class Fighter:
     def shot(self, bullet):
         """Manages when the fighter gets shot by a bullet"""
         self.health -= Fighter.SHOT_HEALTH_RATE*bullet.damage
+        self.size = self.health if self.health > Fighter.MIN_SIZE else Fighter.MIN_SIZE
 
 
 class NaiveBot(Fighter):
