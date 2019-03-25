@@ -6,6 +6,7 @@ import pygame
 from game.core import Arena, Fighter
 from population.individual import NaiveBot
 from math import cos, sin, radians
+import time
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -99,8 +100,7 @@ def run():
         screen.fill(GREY)
         render(game, screen)
         pygame.display.flip()
-
-        clock.tick(60)
+        clock.tick(50)
 
     pygame.quit()
 
@@ -122,6 +122,9 @@ def render_fighter(f, screen, color):
     pygame.draw.line(screen, BLACK, list(f.position), [f.position[0] + f.size/3 * cos(radians(f.direction)),
                                                        f.position[1] + f.size/3 * sin(radians(f.direction))],
                      int(f.size/20))
+    if not isinstance(f, NaiveBot):
+        pygame.draw.line(screen, RED, f.position, [f.position[0] + 400*cos(radians(f.direction)),
+                                                   f.position[1] + 400*sin(radians(f.direction))])
 
 
 def render_bullet(b, screen):

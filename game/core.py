@@ -1,9 +1,9 @@
 #####
 # File containing the game infrastructure
 #####
-from math import pow
+from math import pow, sqrt
 from population.individual import *
-
+import numpy as np
 
 class Arena:
     """This class defines the arena where things will fight"""
@@ -40,9 +40,9 @@ class Arena:
                 return fighter
         return None
 
-    def populate(self, fighterlist=None):
+    def populate(self, fighter_list=None):
         """Generates the fighters, places fighters from list, then adds more until reaches MAX_FIGHTERS"""
-        self.fighters = [fighter for fighter in fighterlist]
+        self.fighters = [fighter for fighter in fighter_list]
         positions_at_angles = [(100, 100), (600, 100), (600, 600), (100, 600)]
         for i in range(len(self.fighters), Arena.MAX_FIGHTERS):
             for position in positions_at_angles:
@@ -84,6 +84,8 @@ class Arena:
             fighter.move()
             # Manages cases where the fighter is out of the arena
             self.fighter_out_of_arena(fighter)
+            # Manages fighter collision
+            self.fighter_collision()
         for bullet in self.bullets:
             bullet.move()
             if not (self.size >= bullet.position[0] >= 0 and self.size >= bullet.position[1] >= 0):
@@ -117,3 +119,25 @@ class Arena:
             fighter.position[1] += self.size - (fighter.position[1] + fighter.size / 4)
         if side == Arena.UP_SIDE:
             fighter.position[1] += 0 - (fighter.position[1] - fighter.size/4)
+
+    def fighter_collision(self):
+        """ Manages collision between fighters """
+        for fighter1 in self.fighters:
+            for fighter2 in self.fighters:
+                if fighter1 != fighter2:
+                    pos1 = np.array(fighter1.position)
+                    pos2 = np.array(fighter2.position)
+
+                    dist_center = sqrt(np.dot(pos1-pos2, pos1-pos2))
+                    dist_side = fighter2.size/4 + fighter1.size/4  # Side to side distance
+
+                    if dist_center < dist_side:
+                        moving_distance = (dist_side-dist_center)/2
+                        orientation = (fighter1.position[0] - fighter2.position[0], fighter1.position[1] - fighter2.position[1])
+                        norm = sqrt(pow(orientation[0], 2) + pow(orientation[1], 2))
+                        orientation = (orientation[0]/norm, orientation[1]/norm)
+                        # Gotta move fighter2 of dist_side-dist_center/2 following the orientation. Same for fighter1 but in the opposite direction
+                        fighter2.position[0] -= orientation[0] * moving_distance
+                        fighter2.position[1] -= orientation[1] * moving_distance
+                        fighter1.position[0] += (orientation[0] * moving_distance)
+                        fighter1.position[1] += (orientation[1] * moving_distance)
