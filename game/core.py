@@ -14,6 +14,8 @@ class Arena:
     DOWN_SIDE = 2
     LEFT_SIDE = 3
 
+    KILL_SCORE = 50
+
     def __init__(self):
         self.size = 700
         self.fighters = []
@@ -55,7 +57,7 @@ class Arena:
         """Manages when a bullet hits the fighter. Removes health, and if h<0, calls fighter_down"""
         if bullet.damage * Fighter.SHOT_HEALTH_RATE >= fighter.health:
             print("a fighter should be down")
-            self.fighter_down(fighter, bullet.scmf, fighter.health)
+            self.fighter_down(fighter, bullet.scmf)
         else:
             fighter.shot(bullet)
             bullet.scmf.health += 2*bullet.damage
@@ -63,11 +65,12 @@ class Arena:
         self.bullets.remove(bullet)
         del bullet
 
-    def fighter_down(self, fighter, killer, health):
+    def fighter_down(self, fighter, killer):
         """Manages a death. Removes fighter from list, gives health to the killer (fighter obj)"""
-        killer.health += health
+        killer.health += Arena.KILL_SCORE
         fighter.health = 0
         self.fighters.remove(fighter)
+        print(self.fighters)
         del fighter
 
     def run(self):

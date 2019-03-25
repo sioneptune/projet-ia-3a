@@ -24,7 +24,7 @@ def pg_init():
     return screen
 
 
-def events(player):
+def events(game, player):
     """Manages the events and movements of the objects"""
 
     keys = pygame.key.get_pressed()
@@ -32,6 +32,8 @@ def events(player):
         player.turn(False)
     if keys[pygame.K_RIGHT]:
         player.turn(True)
+        print("turned right")
+        print(player.direction)
     if keys[pygame.K_UP]:
         player.move()
         player.move()
@@ -42,6 +44,9 @@ def events(player):
         player.health -= 10
     if keys[pygame.K_f]:
         player.shoot()
+        print("shot")
+    if keys[pygame.K_k]:
+        game.fighter_down(fighter=game.fighters[2], killer=player)
 
     """for b in game.bullets:
         if 700 >= b.position[0] >= 0 and 700 >= b.position[1] >= 0:
@@ -86,7 +91,7 @@ def run():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 carry_on = False
-        events(player)
+        events(game, player)
 
         # Game logic goes here
         game.run()
