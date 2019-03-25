@@ -3,7 +3,7 @@
 #####
 
 import pygame
-from game.core import Arena, Fighter, Bullet
+from game.core import Arena, Fighter
 from population.individual import NaiveBot
 from math import cos, sin, radians
 
@@ -24,7 +24,7 @@ def pg_init():
     return screen
 
 
-def events(game, player, screen):
+def events(player):
     """Manages the events and movements of the objects"""
 
     keys = pygame.key.get_pressed()
@@ -86,7 +86,7 @@ def run():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 carry_on = False
-        events(game, player, screen)
+        events(player)
 
         # Game logic goes here
         game.run()

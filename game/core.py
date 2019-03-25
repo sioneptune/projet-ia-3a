@@ -1,8 +1,10 @@
 #####
 # File containing the game infrastructure
 #####
-from math import cos, sin, pow, radians
+from math import pow
 from population.individual import *
+
+
 class Arena:
     """This class defines the arena where things will fight"""
     MAX_FIGHTERS = 4
@@ -112,9 +114,3 @@ class Arena:
             fighter.position[1] += self.size - (fighter.position[1] + fighter.health / 4)
         if side == Arena.UP_SIDE:
             fighter.position[1] += 0 - (fighter.position[1] - fighter.health/4)
-
-
-
-
-
-
