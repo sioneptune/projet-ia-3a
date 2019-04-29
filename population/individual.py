@@ -1,7 +1,7 @@
 #####
 # Representation of an individual playing the game
 #####
-from math import cos, sin, radians
+from math import cos, sin, atan, sqrt, radians, degrees
 import numpy as np
 
 
@@ -34,6 +34,8 @@ class Fighter:
     SHOT_HEALTH_RATE = 5
     MIN_HEALTH = 20
     MIN_SIZE = 20
+    DASH_COOLDOWN = 20
+    DASH_POWER = 50
 
     def __init__(self, position, direction=0, arena=None):
         self.arena = arena
@@ -44,6 +46,7 @@ class Fighter:
         self.shot_bullet = None
         self.change_dir_bool = True
         self.kills = 0
+        self.dash_cooldown = 0
 
     def shoot(self):
         """Shoots a bullet in the same direction as the fighter. Returns the said bullet/adds it to arena bullet list.
@@ -67,6 +70,8 @@ class Fighter:
         """RTFT"""
         self.position[0] += Fighter.FORWARD_SPEED * cos(radians(self.direction))
         self.position[1] += Fighter.FORWARD_SPEED * sin(radians(self.direction))
+        if self.dash_cooldown > 0:
+            self.dash_cooldown -= 1
 
     # Changes direction
     def turn(self, side):
@@ -92,6 +97,11 @@ class Fighter:
         self.health -= Fighter.SHOT_HEALTH_RATE*bullet.damage
         self.size = self.health if self.health > Fighter.MIN_SIZE else Fighter.MIN_SIZE
 
+    def dash(self):
+        if self.dash_cooldown == 0:
+            self.position[0] += Fighter.FORWARD_SPEED * cos(radians(self.direction)) * Fighter.DASH_POWER
+            self.position[1] += Fighter.FORWARD_SPEED * sin(radians(self.direction)) * Fighter.DASH_POWER
+            self.dash_cooldown = Fighter.DASH_COOLDOWN
 
 class NaiveBot(Fighter):
     def __init__(self, position, direction=0, arena=None):
@@ -105,6 +115,7 @@ class NaiveBot(Fighter):
     def take_shoot_decision(self):
         """Shoots if enemy is less than 100 [distance unit] away"""
         dst_from_target = self.look()
+        #if dst_from_target[0]:
         if dst_from_target[0] and 0 < dst_from_target[1] < 400:
             return True
         return False
@@ -112,18 +123,20 @@ class NaiveBot(Fighter):
     def look(self):
         """ looks ahead, returns true and the distance from the nearest enemy if there is an enemy,
         returns false and the distance from the wall if no enemy was found"""
-        # Partner's disapproval : 6666666666666666666666666666666666666666666666666666666666666666 / 20
+        # Partner's disapproval : 66666666666666666666666666666666size66666666666666666666666666666666 / 20
         Trou = True
-        cur_pos = list(self.position)
-        distance = 0
-        while self.arena.size > cur_pos[0] > 0 and self.arena.size > cur_pos[1] > 0:
-            cur_pos[0] += cos(radians(self.direction))
-            cur_pos[1] += sin(radians(self.direction))
-            distance += 1
-            other_fighter = self.arena.is_fighter(cur_pos, circle=True)
-            if other_fighter and other_fighter != self:
-                return [Trou, distance]
-        return [False, distance]
+        for fighter in self.arena.fighters:
+            if fighter != self:
+                try:
+                    link_angle = (degrees(atan((fighter.position[1] - self.position[1]) / (fighter.position[0] - self.position[0]))) + 360) % 180
+                except ZeroDivisionError:
+                    link_angle = 90 if fighter.position[0] > self.position[0] else -90
+                dist = sqrt(pow(self.position[0] - fighter.position[0], 2) + pow(self.position[1] - fighter.position[1], 2))
+                margin = degrees(atan(0.5 * fighter.size / dist))
+                angle = self.direction % 360
+                if abs(angle - link_angle) < abs(margin):
+                    return [Trou, dist]
+        return [False, 500]
 
     def take_move_decision(self):
         """Tries to get closer to enemies and further from walls"""

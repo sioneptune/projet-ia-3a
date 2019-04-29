@@ -56,7 +56,7 @@ class Arena:
     def fighter_hit(self, fighter, bullet):
         """Manages when a bullet hits the fighter. Removes health, and if h<0, calls fighter_down"""
         if bullet.damage * Fighter.SHOT_HEALTH_RATE >= fighter.health:
-            print("a fighter should be down")
+            #print("a fighter should be down")
             self.fighter_down(fighter, bullet.scmf)
         else:
             fighter.shot(bullet)
@@ -70,7 +70,7 @@ class Arena:
         killer.heal(Arena.KILL_SCORE)
         fighter.health = 0
         self.fighters.remove(fighter)
-        print(self.fighters)
+        #print(self.fighters)
         del fighter
 
     def run(self):

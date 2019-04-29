@@ -33,19 +33,17 @@ def events(game, player):
         player.turn(False)
     if keys[pygame.K_RIGHT]:
         player.turn(True)
-        print("turned right")
-        print(player.direction)
+        #print("turned right")
+        #print(player.direction)
     if keys[pygame.K_UP]:
-        player.move()
-        player.move()
-        player.move()
+        player.dash()
     if keys[pygame.K_g]:
         player.heal(10)
     if keys[pygame.K_s]:
         player.remove_health_manually(10)
     if keys[pygame.K_f]:
         player.shoot()
-        print("shot")
+        #print("shot")
     if keys[pygame.K_k]:
         game.fighter_down(fighter=game.fighters[2], killer=player)
 
@@ -87,7 +85,7 @@ def run():
     player.move()
 
     while carry_on:
-
+        start = time.time()
         # Event handling
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -100,7 +98,8 @@ def run():
         screen.fill(GREY)
         render(game, screen)
         pygame.display.flip()
-        clock.tick(50)
+        clock.tick(60)
+        print("Time elapsed:", time.time()-start)
 
     pygame.quit()
 
