@@ -116,7 +116,7 @@ class NaiveBot(Fighter):
     def take_shoot_decision(self):
         """Shoots if enemy is less than 100 [distance unit] away"""
         dst_from_target = self.look()
-        if dst_from_target[0] and 0 < dst_from_target[1] < 400:
+        if dst_from_target[0] and 0 < dst_from_target[1] < 600:
             return True
         return False
 
