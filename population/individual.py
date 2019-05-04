@@ -158,9 +158,6 @@ class NaiveBot(Fighter):
             absciss = (ordinate - y_intercept)/slope
             return [False, distance(self.position, (absciss, ordinate))]
 
-
-
-
     def take_move_decision(self):
         """Tries to get closer to enemies and further from walls"""
         if self.move_decision_cooldown == 0:
