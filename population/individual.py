@@ -216,8 +216,58 @@ class CleverBot(Fighter):
     def take_shoot_decision(self):
         return self.decisions[1]
 
+    def take_dash_decision(self):
+        return self.decisions[2]
+
     def look(self):
-        pass
+        """ This is not going to be optimised. Or is it? (of course not no one else is singing my song. I mean duh! No one knows the ever changing rhythm enough to sing along."""
+        """In each direction, you can definetly get where the wall is. And for each direction, just look if there's a fighter. That's all. Good"""
+        vision = []
+        for i in range(0, 8):
+            vision += self.look_one_direction(self.direction + i * 45)
+        return vision
+
+    def look_one_direction(self, angle):
+        """ Returns distance from enemy and distance from wall following one direction """
+        result = [0, 0]
+        # Distance from the nearest fighter in said direction
+        for fighter in self.arena.fighters:
+            if fighter != self:
+                try:
+                    link_angle = (degrees(atan((fighter.position[1] - self.position[1]) / (fighter.position[0] - self.position[0]))) + 360) % 180
+                except ZeroDivisionError:
+                    link_angle = 90 if fighter.position[0] > self.position[0] else -90
+                dist = distance(self.position, fighter.position)
+                margin = degrees(atan(0.5 * fighter.size / dist))
+                angle = angle % 360
+                dir_vect = [cos(radians(angle)), sin(radians(angle))]
+                vect_fighters = [fighter.position[0] - self.position[0], fighter.position[1] - self.position[1]]
+                if abs(angle - link_angle) < abs(margin) and np.dot(dir_vect, vect_fighters) > 0:  # The np.dot thing is required for the fighter not to "see" what's behind him
+                    result[0] = 1/dist if result[0] == 0 else max(result[0], 1/dist)
+
+        # Distance from wall
+        # Compute the line equation
+        slope = tan(radians(angle))
+        y_intercept = self.position[1] - slope * self.position[0]
+        if abs(angle) < 90:
+            x_lim = self.arena.size
+        else:
+            x_lim = 0
+        ordinate = slope * x_lim + y_intercept
+        if 0 <= ordinate <= self.arena.size:
+            """Si on intercepte les murs verticaux, on regarde à quelle ordonnée on croise"""
+            dist = distance(self.position, (self.arena.size, ordinate))
+            result[1] = 1/dist
+        else:
+            """Sinon ça veut dire qu'on coupe les murs horizontaux, on va donc calculer à quelle abscisse"""
+            if angle < 0:
+                """ The upper wall"""
+                ordinate = self.arena.size
+            else:
+                ordinate = 0
+            absciss = (ordinate - y_intercept)/slope
+            result[1] = 1/distance(self.position, (absciss, ordinate))
+        return result
 
 
 class NeuralNetwork:
