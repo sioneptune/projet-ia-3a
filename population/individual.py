@@ -134,7 +134,9 @@ class NaiveBot(Fighter):
                 dist = distance(self.position, fighter.position)
                 margin = degrees(atan(0.5 * fighter.size / dist))
                 angle = self.direction % 360
-                if abs(angle - link_angle) < abs(margin):
+                dir_vect = [cos(radians(self.direction)), sin(radians(self.direction))]
+                vect_fighters = [fighter.position[0] - self.position[0], fighter.position[1] - self.position[1]]
+                if abs(angle - link_angle) < abs(margin) and (np.dot(dir_vect, vect_fighters)) > 0:
                     return [Trou, dist]
         # Compute the line equation
         slope = tan(radians(self.direction))
@@ -167,7 +169,7 @@ class NaiveBot(Fighter):
                     self.move_decision = Fighter.ROTATE_RIGHT if self.move_decision == Fighter.ROTATE_LEFT else Fighter.ROTATE_LEFT
                 self.previous_distance_from_enemy = dst[1]
             else:
-                if dst[1] < self.previous_distance_from_wall and dst[1] < 100:
+                if dst[1] < self.previous_distance_from_wall and dst[1] < 200:
                     self.move_decision = Fighter.ROTATE_RIGHT if self.move_decision == Fighter.ROTATE_LEFT else Fighter.ROTATE_LEFT
                     self.move_decision_cooldown = 5
                 self.previous_distance_from_wall = dst[1]
@@ -193,7 +195,7 @@ class Humanbot(Fighter):
 
 
 class CleverBot(Fighter):
-    def __init__(self, sizes, position=(350, 350), arena=None):
+    def __init__(self, sizes, position=(350, 350), direction=0, arena=None):
         Fighter.__init__(self, position=position, arena=arena)
         self.brain = NeuralNetwork(sizes)
         # Format: [move, shoot]
@@ -219,7 +221,9 @@ class CleverBot(Fighter):
 
 
 class NeuralNetwork:
-    """ Codes a rally basic neural network with numpy"""
+    """ Codes a really basic neural network with numpy
+    - Inputs: probably distance from each obstacle in 4 directions (obstacle being wall and  enemy)
+    - Outputs: [turn_left, turn_right, dash, shoot]"""
     def __init__(self, sizes):
         """ The list sizes contains the number of neuron in each layer, sizes[0] being the input layer and sizes[-1] the output layer"""
         self.num_layers = len(sizes)
@@ -241,10 +245,12 @@ class NeuralNetwork:
         move_left = result[0]
         move_right = result[1]
         shoot = result[2]
-        decisions = [0, 0]
+        dash = result[3]
+        decisions = [0, 0, 0]
         if move_left >= 0.5 or move_right >= 0.5:
                 decisions[0] = -1 if move_left > move_right else 1
         decisions[1] = 1 if shoot >= 0.5 else 0
+        decisions[2] = dash if dash > 0.5 else 0
         return decisions
 
 
