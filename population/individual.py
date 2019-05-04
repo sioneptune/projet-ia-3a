@@ -1,14 +1,14 @@
 #####
 # Representation of an individual playing the game
 #####
-from math import cos, sin, atan, sqrt, radians, degrees
+from math import cos, sin, tan, atan, sqrt, radians, degrees
 import numpy as np
 
 
 class Bullet:
     """This class might not be necessary, but it defines the type of ammunition used"""
 
-    SPEED = 15
+    SPEED = 20
     MIN_DAMAGE = 5
 
     def __init__(self, direction, damage, scmf):
@@ -103,6 +103,7 @@ class Fighter:
             self.position[1] += Fighter.FORWARD_SPEED * sin(radians(self.direction)) * Fighter.DASH_POWER
             self.dash_cooldown = Fighter.DASH_COOLDOWN
 
+
 class NaiveBot(Fighter):
     def __init__(self, position, direction=0, arena=None):
         Fighter.__init__(self, position, direction=direction, arena=arena)
@@ -115,7 +116,6 @@ class NaiveBot(Fighter):
     def take_shoot_decision(self):
         """Shoots if enemy is less than 100 [distance unit] away"""
         dst_from_target = self.look()
-        #if dst_from_target[0]:
         if dst_from_target[0] and 0 < dst_from_target[1] < 400:
             return True
         return False
@@ -131,12 +131,35 @@ class NaiveBot(Fighter):
                     link_angle = (degrees(atan((fighter.position[1] - self.position[1]) / (fighter.position[0] - self.position[0]))) + 360) % 180
                 except ZeroDivisionError:
                     link_angle = 90 if fighter.position[0] > self.position[0] else -90
-                dist = sqrt(pow(self.position[0] - fighter.position[0], 2) + pow(self.position[1] - fighter.position[1], 2))
+                dist = distance(self.position, fighter.position)
                 margin = degrees(atan(0.5 * fighter.size / dist))
                 angle = self.direction % 360
                 if abs(angle - link_angle) < abs(margin):
                     return [Trou, dist]
-        return [False, 500]
+        # Compute the line equation
+        slope = tan(radians(self.direction))
+        y_intercept = self.position[1] - slope*self.position[0]
+        if abs(self.direction) < 90:
+            x_lim = self.arena.size
+        else:
+            x_lim = 0
+        ordinate = slope * x_lim + y_intercept
+        if 0 <= ordinate <= self.arena.size:
+            """Si on intercepte les murs verticaux, on regarde à quelle ordonnée on croise"""
+            dist = distance(self.position, (self.arena.size, ordinate))
+            return [False, dist]
+        else:
+            """Sinon ça veut dire qu'on coupe les murs horizontaux, on va donc calculer à quelle abscisse"""
+            if self.direction < 0:
+                """ The upper wall"""
+                ordinate = self.arena.size
+            else:
+                ordinate = 0
+            absciss = (ordinate - y_intercept)/slope
+            return [False, distance(self.position, (absciss, ordinate))]
+
+
+
 
     def take_move_decision(self):
         """Tries to get closer to enemies and further from walls"""
@@ -231,3 +254,7 @@ class NeuralNetwork:
 def sigmoid(z):
     """RTFT"""
     return 1.0/(1.0+np.exp(-z))
+
+
+def distance(p1, p2):
+    return sqrt(pow(p1[0]-p2[0], 2) + pow(p1[1]-p2[1], 2))
