@@ -33,8 +33,8 @@ def events(game, player):
         player.turn(False)
     if keys[pygame.K_RIGHT]:
         player.turn(True)
-        #print("turned right")
-        #print(player.direction)
+        # print("turned right")
+        # print(player.direction)
     if keys[pygame.K_UP]:
         player.dash()
     if keys[pygame.K_g]:
@@ -43,7 +43,7 @@ def events(game, player):
         player.remove_health_manually(10)
     if keys[pygame.K_f]:
         player.shoot()
-        #print("shot")
+        # print("shot")
     if keys[pygame.K_k]:
         game.fighter_down(fighter=game.fighters[2], killer=player)
 

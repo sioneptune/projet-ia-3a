@@ -1,5 +1,4 @@
 import unittest
-import os
 from game.core import *
 from math import sqrt
 

@@ -339,39 +339,39 @@ class NeuralNetwork:
 
 # Returns a neuron created from a log file
 # noinspection PyTypeChecker
-def from_log(filename,sizes):
+def from_log(filename, sizes):
     network = NeuralNetwork(sizes)
-    with open(filename,'r') as file:
-        layerindex= neuronindex= 0
-        weight=True
+    with open(filename, 'r') as file:
+        layer_index = neuron_index = 0
+        weight = True
 
         for line in file:
-            line = line.replace("[","")
-            line = line.replace("]","")
+            line = line.replace("[", "")
+            line = line.replace("]", "")
             if weight:
                 if line == 'nw=nw=nw=nw=\n':
-                    neuronindex += 1
+                    neuron_index += 1
                 elif line == 'lw-lw-lw-lw-\n':
-                    neuronindex = 0
-                    layerindex += 1
+                    neuron_index = 0
+                    layer_index += 1
                 elif line == '____\n':
-                    neuronindex = 0
-                    layerindex = 0
+                    neuron_index = 0
+                    layer_index = 0
                     weight = False
                 elif re.match("\s+", line) is not None:
                     pass
                 else:
-                    network.weights[layerindex][neuronindex] = [float(x) for x in line[:-2].split(';')]
+                    network.weights[layer_index][neuron_index] = [float(x) for x in line[:-2].split(';')]
             else:
                 if line == 'nb=nb=nb=nb=\n':
-                    neuronindex+=1
+                    neuron_index += 1
                 elif line == 'lb-lb-lb-lb-\n':
-                    neuronindex = 0
-                    layerindex += 1
-                elif re.match("\s+",line):
+                    neuron_index = 0
+                    layer_index += 1
+                elif re.match("\s+", line):
                     pass
                 else:
-                    network.biases[layerindex][neuronindex] = float(line[:-2])
+                    network.biases[layer_index][neuron_index] = float(line[:-2])
     return network
 
 
