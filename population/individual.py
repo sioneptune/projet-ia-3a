@@ -3,6 +3,7 @@
 #####
 from math import cos, sin, tan, atan, sqrt, radians, degrees
 import numpy as np
+import re
 
 
 class Bullet:
@@ -196,7 +197,7 @@ class Humanbot(Fighter):
 
 class CleverBot(Fighter):
     def __init__(self, sizes, position=(350, 350), direction=0, arena=None):
-        Fighter.__init__(self, position=position, arena=arena)
+        Fighter.__init__(self, position=position, direction=direction, arena=arena)
         self.brain = NeuralNetwork(sizes)
         # Format: [move, shoot]
         self.decisions = [0, 0]
@@ -302,6 +303,60 @@ class NeuralNetwork:
         decisions[1] = 1 if shoot >= 0.5 else 0
         decisions[2] = dash if dash > 0.5 else 0
         return decisions
+
+    def to_log(self):
+        result = ""
+        for layer in self.weights:
+            for neuron in layer:
+                for weight in neuron:
+                    result += "{};".format(weight)
+                result += "\nnw=nw=nw=nw=\n"
+            result += "\nlw-lw-lw-lw-\n"
+        result += "\n____\n"
+        for layer in self.biases:
+            for neuronBias in layer:
+                result += "{};".format(neuronBias)
+                result += "\nnb=nb=nb=nb=\n"
+            result += "\nlb-lb-lb-lb-\n"
+        return result
+
+
+# Returns a neuron created from a log file
+# noinspection PyTypeChecker
+def from_log(filename,sizes):
+    network = NeuralNetwork(sizes)
+    with open(filename,'r') as file:
+        layerindex= neuronindex= 0
+        weight=True
+
+        for line in file:
+            line = line.replace("[","")
+            line = line.replace("]","")
+            if weight:
+                if line == 'nw=nw=nw=nw=\n':
+                    neuronindex += 1
+                elif line == 'lw-lw-lw-lw-\n':
+                    neuronindex = 0
+                    layerindex += 1
+                elif line == '____\n':
+                    neuronindex = 0
+                    layerindex = 0
+                    weight = False
+                elif re.match("\s+", line) is not None:
+                    pass
+                else:
+                    network.weights[layerindex][neuronindex] = [float(x) for x in line[:-2].split(';')]
+            else:
+                if line == 'nb=nb=nb=nb=\n':
+                    neuronindex+=1
+                elif line == 'lb-lb-lb-lb-\n':
+                    neuronindex = 0
+                    layerindex += 1
+                elif re.match("\s+",line):
+                    pass
+                else:
+                    network.biases[layerindex][neuronindex] = float(line[:-2])
+    return network
 
 
 def sigmoid(z):
