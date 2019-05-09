@@ -11,6 +11,7 @@ class Bullet:
 
     SPEED = 20
     MIN_DAMAGE = 5
+    SIZE = 5
 
     def __init__(self, direction, damage, scmf):
         self.dx = cos(radians(direction)) * Bullet.SPEED
@@ -230,7 +231,7 @@ class CleverBot(Fighter):
 
     def look_one_direction(self, angle):
         """ Returns distance from enemy and distance from wall following one direction """
-        result = [0, 0]
+        result = [0, 0, 0]
         # Distance from the nearest fighter in said direction
         for fighter in self.arena.fighters:
             if fighter != self:
@@ -268,6 +269,21 @@ class CleverBot(Fighter):
                 ordinate = 0
             absciss = (ordinate - y_intercept)/slope
             result[1] = 1/distance(self.position, (absciss, ordinate))
+
+        # Distance from the nearest bullet
+        for bullets in self.arena.bullets:
+            if bullets.scmf != self:
+                try:
+                    link_angle = (degrees(atan((bullets.position[1] - self.position[1]) / (bullets.position[0] - self.position[0]))) + 360) % 180
+                except ZeroDivisionError:
+                    link_angle = 90 if bullets.position[0] > self.position[0] else -90
+                dist = distance(self.position, bullets.position)
+                margin = degrees(atan(0.5 * Bullet.SIZE / dist))
+                angle = angle % 360
+                dir_vect = [cos(radians(angle)), sin(radians(angle))]
+                vect_bullets = [bullets.position[0] - self.position[0], bullets.position[1] - self.position[1]]
+                if abs(angle - link_angle) < abs(margin) and np.dot(dir_vect, vect_bullets) > 0:  # The np.dot thing is required for the fighter not to "see" what's behind him
+                    result[2] = 1/dist if result[2] == 0 else max(result[0], 1/dist)
         return result
 
 
