@@ -23,13 +23,17 @@ class CleverTest(unittest.TestCase):
         self.assertNotEqual(results[1], 0)
 
     def test_look(self):
+        naive = NaiveBot(position=(600, 200), direction=0)
+        bull = Bullet(0, 5, naive)
+        bull.position = [400, 350]
+        arena.bullets = [bull]
         results = clever.look()
-        expected = [0, 1/350, 0, 2/(arena.size*sqrt(2)),
-                    0, 1/350, 0, 2/(arena.size*sqrt(2)),
-                    0, 1/350, 0, 2/(arena.size*sqrt(2)),
-                    0, 1/350, 0, 2/(arena.size*sqrt(2))]
-        self.assertEqual(len(results), 16)
-        for i in range(0, 16):
+        expected = [0, 1/350, 1/50, 0, 2/(arena.size*sqrt(2)), 0,
+                    0, 1/350, 0, 0, 2/(arena.size*sqrt(2)), 0,
+                    0, 1/350, 0, 0, 2/(arena.size*sqrt(2)), 0,
+                    0, 1/350, 0, 0, 2/(arena.size*sqrt(2)), 0]
+        self.assertEqual(len(results), 24)
+        for i in range(0, 24):
             self.assertAlmostEqual(results[i], expected[i], delta=0.0005)
 
 
