@@ -291,12 +291,30 @@ class NeuralNetwork:
     """ Codes a really basic neural network with numpy
     - Inputs: probably distance from each obstacle in 4 directions (obstacle being wall and  enemy)
     - Outputs: [turn_left, turn_right, dash, shoot]"""
-    def __init__(self, sizes):
+    def __init__(self, sizes, zero=False):
         """ The list sizes contains the number of neuron in each layer, sizes[0] being the input layer and sizes[-1] the output layer"""
         self.num_layers = len(sizes)
         self.sizes = sizes
-        self.biases = np.array([np.random.randn(y, 1) for y in self.sizes[1:]])
-        self.weights = np.array([np.random.randn(y, x) for x, y in zip(sizes[:-1], sizes[1:])])
+        if not zero:
+            self.biases = np.array([np.random.randn(y, 1) for y in self.sizes[1:]])
+            self.weights = np.array([np.random.randn(y, x) for x, y in zip(sizes[:-1], sizes[1:])])
+        else:
+            self.num_layers = len(sizes)
+            self.sizes = sizes
+            self.biases = [[x for x in range(0, y)] for y in sizes[1:]]
+            self.weights = [[[prevneuron for prevneuron in range(0, sizes[i - 1])] for neuron in range(0, sizes[i])]
+                            for i in range(1, len(sizes))]
+
+    def to_list(self):
+        res_list = []
+        for layer in self.weights:
+            for neuron in layer:
+                for weight in neuron:
+                    res_list.append(weight)
+        for layer in self.biases:
+            for neuron_bias in layer:
+                res_list.append(neuron_bias[0])
+        return res_list
 
     def feed_forward(self, inputs):
         """ Returns the output of the neural network at the given input. Returns a list corresponding to the output layer
@@ -335,6 +353,47 @@ class NeuralNetwork:
                 result += "\nnb=nb=nb=nb=\n"
             result += "\nlb-lb-lb-lb-\n"
         return result
+
+
+def from_list(sizes, liste):
+    bias_weight_delim = 0
+    for x in sizes[1:]:
+        bias_weight_delim += x
+    bias_list = liste[-bias_weight_delim:]
+    weight_list = liste[:-bias_weight_delim]
+    biases = []
+    for element in sizes[1:]:
+        biases.append(bias_list[:element])
+        bias_list = bias_list[element:]
+
+    semi_parsed_weight_list = []  # I have [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, A, B] and sizes = [2,3,2]
+    for i in range(1, len(sizes)):
+        semi_parsed_weight_list.append(weight_list[:sizes[i-1]*sizes[i]])  # [[0, 1, 2, 3, 4, 5], [6, 7, 8, 9, A, B]]
+        weight_list = weight_list[sizes[i-1]*sizes[i]:]
+
+    weights = []
+
+    for i in range(1, len(sizes)):
+        sub_list = semi_parsed_weight_list[i-1]  # If i = 1: sub_list = [0, 1, 2, 3, 4, 5]
+        tmp_list = []
+        for j in range(0, sizes[i]):
+            tmp_list.append(sub_list[:sizes[i-1]])
+            sub_list = sub_list[sizes[i-1]:]
+        weights.append(tmp_list)  # tmp_list = [[0, 1], [2, 3], [4, 5]]
+
+    network = NeuralNetwork(sizes=sizes)
+    for i in range(0, len(network.biases)):
+        for j in range(0, len(network.biases[i])):
+            network.biases[i][j][0] = biases[i][j]
+
+    for i in range(0, len(network.weights)):
+        for j in range(0, len(network.weights[i])):
+            for k in range(0, len(network.weights[i][j])):
+                network.weights[i][j][k] = weights[i][j][k]
+
+    return network
+
+
 
 
 # Returns a neuron created from a log file
@@ -382,3 +441,4 @@ def sigmoid(z):
 
 def distance(p1, p2):
     return sqrt(pow(p1[0]-p2[0], 2) + pow(p1[1]-p2[1], 2))
+
