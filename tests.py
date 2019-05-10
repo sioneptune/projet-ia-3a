@@ -37,5 +37,25 @@ class CleverTest(unittest.TestCase):
             self.assertAlmostEqual(results[i], expected[i], delta=0.0005)
 
 
+class NeuronTest(unittest.TestCase):
+
+    def test_to_list(self):
+        net = NeuralNetwork([3, 2, 3], zero=True)
+        liste = net.to_list()
+        self.assertEqual(liste, [0, 1, 2, 0, 1, 2, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 2])
+
+    def test_from_list(self):
+        pass
+
+    def test_from_list(self):
+        net = NeuralNetwork([3, 2, 3])
+        liste = net.to_list()
+
+        other_net = from_list([3,2,3], liste)
+
+        self.assertEqual(net.biases, other_net.biases)
+        self.assertEqual(net.weights, other_net.weights)
+
+
 if __name__ == '__main__':
     unittest.main()
