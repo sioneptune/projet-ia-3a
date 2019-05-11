@@ -1,9 +1,10 @@
 #####
 # File containing the game infrastructure
 #####
-from math import pow, sqrt
+from math import pow
 from population.individual import *
 import numpy as np
+
 
 class Arena:
     """This class defines the arena where things will fight"""
@@ -58,7 +59,7 @@ class Arena:
     def fighter_hit(self, fighter, bullet)   :
         """Manages when a bullet hits the fighter. Removes health, and if h<0, calls fighter_down"""
         if bullet.damage * Fighter.SHOT_HEALTH_RATE >= fighter.health:
-            #print("a fighter should be down")
+            # print("a fighter should be down")
             self.fighter_down(fighter, bullet.scmf)
         else:
             fighter.shot(bullet)
@@ -72,7 +73,7 @@ class Arena:
         killer.heal(Arena.KILL_SCORE)
         fighter.health = 0
         self.fighters.remove(fighter)
-        #print(self.fighters)
+        # print(self.fighters)
         del fighter
 
     def run(self):
@@ -83,6 +84,12 @@ class Arena:
             if isinstance(fighter, NaiveBot):
                 fighter.take_move_decision()
                 fighter.turn(fighter.move_decision)
+            if isinstance(fighter, CleverBot):
+                fighter.take_decisions(fighter.look())
+                fighter.take_move_decision()
+                fighter.turn(fighter.move_decision)
+                fighter.take_shoot_decision()
+                fighter.take_dash_decision()
             fighter.move()
             # Manages cases where the fighter is out of the arena
             self.fighter_out_of_arena(fighter)

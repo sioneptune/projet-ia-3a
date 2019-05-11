@@ -204,11 +204,14 @@ class CleverBot(Fighter):
         Fighter.__init__(self, position=position, direction=direction, arena=arena)
         self.brain = NeuralNetwork(sizes)
         # Format: [move, shoot]
-        self.decisions = [0, 0]
+        self.decisions = [0, 0, 0]
+        self.move_decision = Fighter.ROTATE_RIGHT
+
 
     def take_decisions(self, inputs):
         """ This function will be changed to use the neural network instead of using parameters"""
         self.decisions = self.brain.take_decision(inputs)
+        print(self.decisions)
 
     def take_move_decision(self):
         turn = self.decisions[0]
@@ -216,13 +219,15 @@ class CleverBot(Fighter):
             self.change_dir_bool = False
         else:
             self.change_dir_bool = True
-            self.direction = 0 if turn == -1 else 1
+            self.move_decision = Fighter.ROTATE_RIGHT if self.move_decision == Fighter.ROTATE_LEFT else Fighter.ROTATE_LEFT
 
     def take_shoot_decision(self):
-        return self.decisions[1]
+        if self.decisions[1]:
+            self.shoot()
 
     def take_dash_decision(self):
-        return self.decisions[2]
+        if self.decisions[2]:
+            self.dash()
 
     def look(self):
         """ This is not going to be optimised. Or is it? (of course not no one else is singing my song. I mean duh! No one knows the ever changing rhythm enough to sing along."""
@@ -230,6 +235,7 @@ class CleverBot(Fighter):
         vision = []
         for i in range(0, 8):
             vision += self.look_one_direction(self.direction + i * 45)
+        print(vision)
         return vision
 
     def look_one_direction(self, angle):
@@ -382,7 +388,7 @@ def from_log(filename, sizes):
                 elif line == 'lb-lb-lb-lb-\n':
                     neuronindex = 0
                     layerindex += 1
-                elif re.match("\s+",line):
+                elif re.match("\s+", line):
                     pass
                 else:
                     network.biases[layerindex][neuronindex] = float(line[:-2])

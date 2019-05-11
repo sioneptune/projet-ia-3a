@@ -99,7 +99,7 @@ def run(player):
         render(game, screen)
         pygame.display.flip()
         clock.tick(60)
-        print("Time elapsed:", time.time()-start)
+        # print("Time elapsed:", time.time()-start)
 
     pygame.quit()
 
