@@ -45,13 +45,10 @@ class NeuronTest(unittest.TestCase):
         self.assertEqual(liste, [0, 1, 2, 0, 1, 2, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 2])
 
     def test_from_list(self):
-        pass
-
-    def test_from_list(self):
         net = NeuralNetwork([3, 2, 3])
         liste = net.to_list()
 
-        other_net = from_list([3,2,3], liste)
+        other_net = from_list([3, 2, 3], liste)
 
         self.assertEqual(net.biases, other_net.biases)
         self.assertEqual(net.weights, other_net.weights)
