@@ -4,10 +4,30 @@ from game.core import *
 from statistics import mean
 from math import pow
 from os import system
+from multiprocessing import Process, Queue
 
 POPSIZE = 10
 COEFF_SIZES = [25, 10, 4]
 nb_coeffs = 100
+
+
+def play_process(individual_list, queue):
+    scores = []
+    for fighter in individual_list:
+        game = Arena()
+        fighter.arena = game
+        game.populate([fighter, NaiveBot([600, 100], arena=game, direction=135),
+                       NaiveBot([100, 100], arena=game, direction=45), NaiveBot([600, 600], arena=game, direction=225)])
+        time = 0
+        print("Health:", fighter.health)
+        while fighter.health > 0 and len(game.fighters) != 1 and time < 5000:
+            game.run()
+            time += 1
+        scores.append(
+            [heur([fighter.kills, time / 10000, fighter.hits_taken, fighter.successful_hits, len(game.fighters),
+                   fighter.num_of_shots]),
+             fighter])
+    queue.put(scores)
 
 
 def heur(item):
@@ -17,8 +37,10 @@ def heur(item):
     hits_taken = item[2]
     hits_scored = item[3]
     final_pos = item[4]
+    num_shots = item[5]
     print(time_alive, hits_taken, hits_scored)
-    return (hits_taken+0.0000001) / ((pow(hits_scored, 2) * ((kill_nb * kill_nb)))+0.000000001)
+    res = num_shots/hits_scored - 1 if hits_scored != 0 else 50
+    return res
 
 
 def gen_init(filename=None):
@@ -38,20 +60,34 @@ def gen_init(filename=None):
 
 def run_one_gen(gen):
     """runs a generation of fighter"""
-    scores = []
-    for fighter in gen:
-        game = Arena()
-        fighter.arena = game
-        game.populate([fighter, NaiveBot([600, 100], arena=game, direction=135),
-                       NaiveBot([100, 100], arena=game, direction=45), NaiveBot([600, 600], arena=game, direction=225)])
-        time = 0
-        print("Health:", fighter.health)
-        while fighter.health > 0 and len(game.fighters) != 1 and time < 5000:
-            game.run()
-            time += 1
-        scores.append([heur([fighter.kills, time/10000, fighter.hits_taken, fighter.successful_hits, len(game.fighters)]),
-                       fighter])
-        print(fighter.num_of_shots)
+    queue1 = Queue()
+    queue2 = Queue()
+    queue3 = Queue()
+    queue4 = Queue()
+
+    list1 = [gen[i] for i in range(0, len(gen) // 4)]
+    list2 = [gen[i] for i in range(len(gen) // 4, 2 * len(gen) // 4)]
+    list3 = [gen[i] for i in range(2 * len(gen) // 4, 3 * len(gen) // 4)]
+    list4 = [gen[i] for i in range(3 * len(gen) // 4, len(gen))]
+
+    process1 = Process(target=play_process, args=(list1, queue1))
+    process2 = Process(target=play_process, args=(list2, queue2))
+    process3 = Process(target=play_process, args=(list3, queue3))
+    process4 = Process(target=play_process, args=(list4, queue4))
+
+    process1.start()
+    process2.start()
+    process3.start()
+    process4.start()
+
+    scores = queue1.get()+queue2.get()+queue3.get()+queue4.get()
+
+    process1.join()
+    process2.join()
+    process3.join()
+    process4.join()
+
+    print(scores)
     return scores
 
 
@@ -93,7 +129,7 @@ def run(startnum):
         makelog(scores, gennum)
         poplist = [c.brain.to_list() for c in gen]
         scorelist = [x[0] for x in scores]
-        es.tell(poplist,scorelist)
+        es.tell(poplist, scorelist)
         print(f"Ran generation {gennum}")
 
 
