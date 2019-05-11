@@ -85,7 +85,7 @@ class Arena:
                 fighter.take_move_decision()
                 fighter.turn(fighter.move_decision)
             if isinstance(fighter, CleverBot):
-                fighter.take_decisions(fighter.look())
+                fighter.take_decisions(fighter.look()+[fighter.health])
                 fighter.take_move_decision()
                 fighter.turn(fighter.move_decision)
                 fighter.take_shoot_decision()

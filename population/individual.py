@@ -51,6 +51,7 @@ class Fighter:
         self.successful_hits = 0
         self.hits_taken = 0
         self.dash_cooldown = 0
+        self.num_of_shots = 0
 
     def shoot(self):
         """Shoots a bullet in the same direction as the fighter. Returns the said bullet/adds it to arena bullet list.
@@ -60,6 +61,7 @@ class Fighter:
             self.arena.bullets.append(self.shot_bullet)
             self.health -= Fighter.DAMAGE_FACTOR * self.health
             self.size = self.health if self.health > Fighter.MIN_SIZE else Fighter.MIN_SIZE
+            self.num_of_shots += 1
 
     def heal(self, health):
         self.health += health
@@ -207,11 +209,9 @@ class CleverBot(Fighter):
         self.decisions = [0, 0, 0]
         self.move_decision = Fighter.ROTATE_RIGHT
 
-
     def take_decisions(self, inputs):
         """ This function will be changed to use the neural network instead of using parameters"""
         self.decisions = self.brain.take_decision(inputs)
-        print(self.decisions)
 
     def take_move_decision(self):
         turn = self.decisions[0]
@@ -235,7 +235,6 @@ class CleverBot(Fighter):
         vision = []
         for i in range(0, 8):
             vision += self.look_one_direction(self.direction + i * 45)
-        print(vision)
         return vision
 
     def look_one_direction(self, angle):

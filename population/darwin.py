@@ -2,10 +2,11 @@ import cma
 from random import random
 from game.core import *
 from statistics import mean
+from math import pow
 from os import system
 
 POPSIZE = 10
-COEFF_SIZES = [24, 10, 4]
+COEFF_SIZES = [25, 10, 4]
 nb_coeffs = 100
 
 
@@ -16,7 +17,8 @@ def heur(item):
     hits_taken = item[2]
     hits_scored = item[3]
     final_pos = item[4]
-    return (time_alive * final_pos * (hits_scored - hits_taken)) / (1 + final_pos - kill_nb)
+    print(time_alive, hits_taken, hits_scored)
+    return (hits_taken+0.0000001) / ((pow(hits_scored, 2) * ((kill_nb * kill_nb)))+0.000000001)
 
 
 def gen_init(filename=None):
@@ -40,13 +42,16 @@ def run_one_gen(gen):
     for fighter in gen:
         game = Arena()
         fighter.arena = game
-        game.populate([fighter,NaiveBot([600,100],arena=game)])
+        game.populate([fighter, NaiveBot([600, 100], arena=game, direction=135),
+                       NaiveBot([100, 100], arena=game, direction=45), NaiveBot([600, 600], arena=game, direction=225)])
         time = 0
-        while fighter.health > 0 and len(game.fighters) != 1 and time<100000:
+        print("Health:", fighter.health)
+        while fighter.health > 0 and len(game.fighters) != 1 and time < 5000:
             game.run()
             time += 1
         scores.append([heur([fighter.kills, time/10000, fighter.hits_taken, fighter.successful_hits, len(game.fighters)]),
                        fighter])
+        print(fighter.num_of_shots)
     return scores
 
 
@@ -63,11 +68,11 @@ def run(startnum):
     gennum = startnum
     gen = []
 
-    if gennum !=0:
-        f = open(f"gen_{gennum}.log","r")
+    if gennum != 0:
+        f = open(f"gen_{gennum}.log", "r")
         l = f.readlines()
         for line in l:
-            c = CleverBot(COEFF_SIZES,position=[100,600])
+            c = CleverBot(COEFF_SIZES, position=[100, 600], direction=-45)
             c.brain = from_list(COEFF_SIZES, [float(x) for x in line.split(":")[1].split(",")])
             gen.append(c)
     else:
@@ -77,7 +82,8 @@ def run(startnum):
     es = cma.CMAEvolutionStrategy([0]*len(gen[0].brain.to_list()), 0.5)
 
     while True:
-        newpop = es.ask(number=POPSIZE)
+        gen = []
+        newpop = es.ask()
         for l in newpop:
             c = CleverBot(COEFF_SIZES, position=[100, 600])
             c.brain = from_list(COEFF_SIZES, l)
