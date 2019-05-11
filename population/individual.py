@@ -48,6 +48,8 @@ class Fighter:
         self.shot_bullet = None
         self.change_dir_bool = True
         self.kills = 0
+        self.successful_hits = 0
+        self.hits_taken = 0
         self.dash_cooldown = 0
 
     def shoot(self):
@@ -98,6 +100,7 @@ class Fighter:
         """Manages when the fighter gets shot by a bullet"""
         self.health -= Fighter.SHOT_HEALTH_RATE*bullet.damage
         self.size = self.health if self.health > Fighter.MIN_SIZE else Fighter.MIN_SIZE
+        self.hits_taken += 1
 
     def dash(self):
         if self.dash_cooldown == 0:
@@ -298,6 +301,17 @@ class NeuralNetwork:
         self.biases = np.array([np.random.randn(y, 1) for y in self.sizes[1:]])
         self.weights = np.array([np.random.randn(y, x) for x, y in zip(sizes[:-1], sizes[1:])])
 
+    def to_list(self):
+        res_list = []
+        for layer in self.weights:
+            for neuron in layer:
+                for weight in neuron:
+                    res_list.append(weight)
+        for layer in self.biases:
+            for neuron_bias in layer:
+                res_list.append(neuron_bias[0])
+        return res_list
+
     def feed_forward(self, inputs):
         """ Returns the output of the neural network at the given input. Returns a list corresponding to the output layer
         output format: [move_left, move_right, shoot]"""
@@ -339,9 +353,9 @@ class NeuralNetwork:
 
 # Returns a neuron created from a log file
 # noinspection PyTypeChecker
-def from_log(filename,sizes):
+def from_log(filename, sizes):
     network = NeuralNetwork(sizes)
-    with open(filename,'r') as file:
+    with open(filename, 'r') as file:
         layerindex= neuronindex= 0
         weight=True
 
@@ -372,6 +386,44 @@ def from_log(filename,sizes):
                     pass
                 else:
                     network.biases[layerindex][neuronindex] = float(line[:-2])
+    return network
+
+
+def from_list(sizes, liste):
+    bias_weight_delim = 0
+    for x in sizes[1:]:
+        bias_weight_delim += x
+    bias_list = liste[-bias_weight_delim:]
+    weight_list = liste[:-bias_weight_delim]
+    biases = []
+    for element in sizes[1:]:
+        biases.append(bias_list[:element])
+        bias_list = bias_list[element:]
+
+    semi_parsed_weight_list = []  # I have [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, A, B] and sizes = [2,3,2]
+    for i in range(1, len(sizes)):
+        semi_parsed_weight_list.append(weight_list[:sizes[i-1]*sizes[i]])  # [[0, 1, 2, 3, 4, 5], [6, 7, 8, 9, A, B]]
+        weight_list = weight_list[sizes[i-1]*sizes[i]:]
+
+    weights = []
+
+    for i in range(1, len(sizes)):
+        sub_list = semi_parsed_weight_list[i-1]  # If i = 1: sub_list = [0, 1, 2, 3, 4, 5]
+        tmp_list = []
+        for j in range(0, sizes[i]):
+            tmp_list.append(sub_list[:sizes[i-1]])
+            sub_list = sub_list[sizes[i-1]:]
+        weights.append(tmp_list)  # tmp_list = [[0, 1], [2, 3], [4, 5]]
+
+    network = NeuralNetwork(sizes=sizes)
+    for i in range(0, len(network.biases)):
+        for j in range(0, len(network.biases[i])):
+            network.biases[i][j][0] = biases[i][j]
+
+    for i in range(0, len(network.weights)):
+        for j in range(0, len(network.weights[i])):
+            for k in range(0, len(network.weights[i][j])):
+                network.weights[i][j][k] = weights[i][j][k]
     return network
 
 

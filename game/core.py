@@ -42,18 +42,20 @@ class Arena:
 
     def populate(self, fighter_list=None):
         """Generates the fighters, places fighters from list, then adds more until reaches MAX_FIGHTERS"""
-        self.fighters = [fighter for fighter in fighter_list]
+        if fighter_list:
+            self.fighters = [fighter for fighter in fighter_list]
         positions_at_angles = [(100, 100), (600, 100), (600, 600), (100, 600)]
         for i in range(len(self.fighters), Arena.MAX_FIGHTERS):
             for position in positions_at_angles:
                 if not self.is_fighter(position, offset=100):
-                    self.fighters.append(Fighter(position=position, arena=self))
+                    self.fighters.append(NaiveBot(position=position, arena=self))
 
     def add_fighter(self, fighter):
         if not self.is_fighter(fighter.position, offset=100) and len(self.fighters) < Arena.MAX_FIGHTERS:
+            fighter.arena = self
             self.fighters.append(fighter)
 
-    def fighter_hit(self, fighter, bullet):
+    def fighter_hit(self, fighter, bullet)   :
         """Manages when a bullet hits the fighter. Removes health, and if h<0, calls fighter_down"""
         if bullet.damage * Fighter.SHOT_HEALTH_RATE >= fighter.health:
             #print("a fighter should be down")
@@ -97,6 +99,8 @@ class Arena:
                 if fighter:
                     if fighter != bullet.scmf:
                         self.fighter_hit(fighter, bullet)
+                        bullet.scmf.successful_hits += 1
+
 
     def fighter_out_of_arena(self, fighter):
         """ Checks if the fighter is out of arena, calls replace_fighter_in_arena if so"""

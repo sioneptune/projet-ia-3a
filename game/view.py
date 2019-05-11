@@ -4,7 +4,7 @@
 
 import pygame
 from game.core import Arena, Fighter
-from population.individual import NaiveBot
+from population.individual import *
 from math import cos, sin, radians
 import time
 
@@ -43,7 +43,7 @@ def events(game, player):
         player.remove_health_manually(10)
     if keys[pygame.K_f]:
         player.shoot()
-        #print("shot")
+        #print("shot"On ir)
     if keys[pygame.K_k]:
         game.fighter_down(fighter=game.fighters[2], killer=player)
 
@@ -69,13 +69,13 @@ def events(game, player):
                     game.fighter_hit(fighter, bullet)"""
 
 
-def run():
+def run(player):
     carry_on = True
     clock = pygame.time.Clock()
     screen = pg_init()
 
     game = Arena()
-    player = Fighter([600, 600], arena=game)
+    player.arena = game
     game.fighters.append(player)
     game.fighters.append(NaiveBot(position=[100, 100], direction=45, arena=game))
     game.fighters.append(NaiveBot(position=[600, 100], direction=135, arena=game))
@@ -131,4 +131,4 @@ def render_bullet(b, screen):
 
 
 if __name__ == '__main__':
-    run()
+    run(CleverBot([24,10,4],[600, 600]))
