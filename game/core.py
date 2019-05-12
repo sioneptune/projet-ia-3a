@@ -85,7 +85,7 @@ class Arena:
                 fighter.take_move_decision()
                 fighter.turn(fighter.move_decision)
             if isinstance(fighter, CleverBot):
-                fighter.take_decisions(fighter.look()+[fighter.health])
+                fighter.take_decisions(fighter.look()+[1/fighter.health])
                 fighter.take_move_decision()
                 fighter.turn(fighter.move_decision)
                 fighter.take_shoot_decision()
@@ -107,7 +107,6 @@ class Arena:
                     if fighter != bullet.scmf:
                         self.fighter_hit(fighter, bullet)
                         bullet.scmf.successful_hits += 1
-
 
     def fighter_out_of_arena(self, fighter):
         """ Checks if the fighter is out of arena, calls replace_fighter_in_arena if so"""

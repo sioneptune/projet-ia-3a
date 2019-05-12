@@ -2,11 +2,12 @@ import cma
 from random import random
 from game.core import *
 from statistics import mean
-from math import pow
+from math import pow, sqrt, exp
 from os import system
 from multiprocessing import Process, Queue
+import random
 
-POPSIZE = 10
+POPSIZE = 60
 COEFF_SIZES = [25, 10, 4]
 nb_coeffs = 100
 
@@ -16,16 +17,16 @@ def play_process(individual_list, queue):
     for fighter in individual_list:
         game = Arena()
         fighter.arena = game
-        game.populate([fighter, NaiveBot([600, 100], arena=game, direction=135),
-                       NaiveBot([100, 100], arena=game, direction=45), NaiveBot([600, 600], arena=game, direction=225)])
+        game.populate([fighter, NaiveBot([random.randint(550, 650), random.randint(50, 150)], arena=game, direction=random.randint(90, 180)),
+                       NaiveBot([random.randint(50, 150), random.randint(50, 150)], arena=game, direction=random.randint(0, 90)),
+                       NaiveBot([random.randint(550, 650), random.randint(550, 650)], arena=game, direction=random.randint(-180, -90))])
         time = 0
-        print("Health:", fighter.health)
-        while fighter.health > 0 and len(game.fighters) != 1 and time < 5000:
+        while fighter.health > 0 and len(game.fighters) != 1 and time < 50000:
             game.run()
             time += 1
         scores.append(
             [heur([fighter.kills, time / 10000, fighter.hits_taken, fighter.successful_hits, len(game.fighters),
-                   fighter.num_of_shots]),
+                   fighter.num_of_shots, fighter.health]),
              fighter])
     queue.put(scores)
 
@@ -38,9 +39,12 @@ def heur(item):
     hits_scored = item[3]
     final_pos = item[4]
     num_shots = item[5]
-    print(time_alive, hits_taken, hits_scored)
-    res = num_shots/hits_scored - 1 if hits_scored != 0 else 50
-    return res
+    health = item[6]
+    alive = item[6] > 0
+    print(item)
+    heur = (pow(pow(hits_scored+1, 2) + exp(kill_nb) / ((6 * alive)+1), 2))*(health+1)/10000
+    heur = 0.00000000001 if heur == 0 else heur * time_alive
+    return 1/abs(heur)
 
 
 def gen_init(filename=None):
@@ -87,7 +91,6 @@ def run_one_gen(gen):
     process3.join()
     process4.join()
 
-    print(scores)
     return scores
 
 
@@ -115,16 +118,16 @@ def run(startnum):
         for i in range(POPSIZE):
             gen.append(CleverBot(COEFF_SIZES, position=[100, 600]))
 
-    es = cma.CMAEvolutionStrategy([0]*len(gen[0].brain.to_list()), 0.5)
+    es = cma.CMAEvolutionStrategy([0]*len(gen[0].brain.to_list()), 2)
 
     while True:
         gen = []
-        newpop = es.ask()
+        newpop = es.ask(number=POPSIZE)
         for l in newpop:
             c = CleverBot(COEFF_SIZES, position=[100, 600])
             c.brain = from_list(COEFF_SIZES, l)
             gen.append(c)
-        gennum +=1
+        gennum += 1
         scores = run_one_gen(gen)
         makelog(scores, gennum)
         poplist = [c.brain.to_list() for c in gen]

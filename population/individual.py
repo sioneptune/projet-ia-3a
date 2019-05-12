@@ -205,7 +205,7 @@ class CleverBot(Fighter):
     def __init__(self, sizes, position=(350, 350), direction=0, arena=None):
         Fighter.__init__(self, position=position, direction=direction, arena=arena)
         self.brain = NeuralNetwork(sizes)
-        # Format: [move, shoot]
+        # Format: [move, shoot, dash]
         self.decisions = [0, 0, 0]
         self.move_decision = Fighter.ROTATE_RIGHT
 
@@ -214,12 +214,10 @@ class CleverBot(Fighter):
         self.decisions = self.brain.take_decision(inputs)
 
     def take_move_decision(self):
-        turn = self.decisions[0]
-        if turn == 0:
-            self.change_dir_bool = False
-        else:
-            self.change_dir_bool = True
-            self.move_decision = Fighter.ROTATE_RIGHT if self.move_decision == Fighter.ROTATE_LEFT else Fighter.ROTATE_LEFT
+        self.move_decision = self.decisions[0]
+
+    def turn(self,side):
+        self.direction += side * 5
 
     def take_shoot_decision(self):
         if self.decisions[1]:
@@ -333,10 +331,10 @@ class NeuralNetwork:
         shoot = result[2]
         dash = result[3]
         decisions = [0, 0, 0]
-        if move_left >= 0.5 or move_right >= 0.5:
+        if move_left >= 0 or move_right >= 0:
                 decisions[0] = -1 if move_left > move_right else 1
-        decisions[1] = 1 if shoot >= 0.5 else 0
-        decisions[2] = dash if dash > 0.5 else 0
+        decisions[1] = 1 if shoot >= 0 else 0
+        decisions[2] = dash if dash > 0 else 0
         return decisions
 
     def to_log(self):
