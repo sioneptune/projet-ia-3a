@@ -216,7 +216,7 @@ class CleverBot(Fighter):
     def take_move_decision(self):
         self.move_decision = self.decisions[0]
 
-    def turn(self,side):
+    def turn(self, side):
         self.direction += side * 5
 
     def take_shoot_decision(self):
@@ -265,7 +265,7 @@ class CleverBot(Fighter):
         if 0 <= ordinate <= self.arena.size:
             """Si on intercepte les murs verticaux, on regarde à quelle ordonnée on croise"""
             dist = distance(self.position, (self.arena.size, ordinate))
-            result[1] = 1/dist
+            result[1] = 5/dist
         else:
             """Sinon ça veut dire qu'on coupe les murs horizontaux, on va donc calculer à quelle abscisse"""
             if angle < 0:
@@ -274,7 +274,7 @@ class CleverBot(Fighter):
             else:
                 ordinate = 0
             absciss = (ordinate - y_intercept)/slope
-            result[1] = 1/distance(self.position, (absciss, ordinate))
+            result[1] = 5/distance(self.position, (absciss, ordinate))
 
         # Distance from the nearest bullet
         for bullets in self.arena.bullets:
@@ -289,7 +289,7 @@ class CleverBot(Fighter):
                 dir_vect = [cos(radians(angle)), sin(radians(angle))]
                 vect_bullets = [bullets.position[0] - self.position[0], bullets.position[1] - self.position[1]]
                 if abs(angle - link_angle) < abs(margin) and np.dot(dir_vect, vect_bullets) > 0:  # The np.dot thing is required for the fighter not to "see" what's behind him
-                    result[2] = 1/dist if result[2] == 0 else max(result[0], 1/dist)
+                    result[2] = 5/dist if result[2] == 0 else max(result[0], 1/dist)
         return result
 
 
@@ -331,10 +331,10 @@ class NeuralNetwork:
         shoot = result[2]
         dash = result[3]
         decisions = [0, 0, 0]
-        if move_left >= 0 or move_right >= 0:
+        if move_left >= 0.5 or move_right >= 0.5:
                 decisions[0] = -1 if move_left > move_right else 1
-        decisions[1] = 1 if shoot >= 0 else 0
-        decisions[2] = dash if dash > 0 else 0
+        decisions[1] = 1 if shoot >= 0.5 else 0
+        decisions[2] = dash if dash > 0.5 else 0
         return decisions
 
     def to_log(self):

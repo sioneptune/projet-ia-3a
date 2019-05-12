@@ -4,10 +4,11 @@ from game.core import *
 from statistics import mean
 from math import pow, sqrt, exp
 from os import system
+import sys
 from multiprocessing import Process, Queue
 import random
 
-POPSIZE = 60
+POPSIZE = 30
 COEFF_SIZES = [25, 10, 4]
 nb_coeffs = 100
 
@@ -17,9 +18,9 @@ def play_process(individual_list, queue):
     for fighter in individual_list:
         game = Arena()
         fighter.arena = game
-        game.populate([fighter, NaiveBot([random.randint(550, 650), random.randint(50, 150)], arena=game, direction=random.randint(90, 180)),
-                       NaiveBot([random.randint(50, 150), random.randint(50, 150)], arena=game, direction=random.randint(0, 90)),
-                       NaiveBot([random.randint(550, 650), random.randint(550, 650)], arena=game, direction=random.randint(-180, -90))])
+        game.populate([fighter, NaiveBot([random.randint(50,650), random.randint(50, 650)], arena=game, direction=random.randint(-180, 180)),
+                       NaiveBot([random.randint(50, 650), random.randint(50, 650)], arena=game, direction=random.randint(0, 360)),
+                       NaiveBot([random.randint(50, 650), random.randint(50, 650)], arena=game, direction=random.randint(-180, 2*90))])
         time = 0
         while fighter.health > 0 and len(game.fighters) != 1 and time < 50000:
             game.run()
@@ -35,16 +36,17 @@ def heur(item):
     """return the heuristic for an item of the form [kill_nb, time_alive, hits_taken, hits_scored, final_pos]"""
     kill_nb = item[0]
     time_alive = item[1]
-    hits_taken = item[2]
+    hits_taken = item[2] + (1 if item[6] == 0 else 0)
     hits_scored = item[3]
     final_pos = item[4]
     num_shots = item[5]
     health = item[6]
     alive = item[6] > 0
-    print(item)
-    heur = (pow(pow(hits_scored+1, 2) + exp(kill_nb) / ((6 * alive)+1), 2))*(health+1)/10000
-    heur = 0.00000000001 if heur == 0 else heur * time_alive
-    return 1/abs(heur)
+    a = 0.00011 if num_shots == 0 else 0
+    b = 1 if hits_taken == 0 else 0
+    heur = pow(hits_scored, 2)/(num_shots + a)
+    print(item, heur)
+    return 1/abs(heur+0.01)
 
 
 def gen_init(filename=None):
@@ -111,20 +113,20 @@ def run(startnum):
         f = open(f"gen_{gennum}.log", "r")
         l = f.readlines()
         for line in l:
-            c = CleverBot(COEFF_SIZES, position=[100, 600], direction=-45)
+            c = CleverBot(COEFF_SIZES, position=[350, 350], direction=random.randint(0, 360))
             c.brain = from_list(COEFF_SIZES, [float(x) for x in line.split(":")[1].split(",")])
             gen.append(c)
     else:
         for i in range(POPSIZE):
             gen.append(CleverBot(COEFF_SIZES, position=[100, 600]))
 
-    es = cma.CMAEvolutionStrategy([0]*len(gen[0].brain.to_list()), 2)
+    es = cma.CMAEvolutionStrategy([0]*len(gen[0].brain.to_list()), 10)
 
     while True:
         gen = []
         newpop = es.ask(number=POPSIZE)
         for l in newpop:
-            c = CleverBot(COEFF_SIZES, position=[100, 600])
+            c = CleverBot(COEFF_SIZES, position=[350, 350], direction=random.randint(0, 360))
             c.brain = from_list(COEFF_SIZES, l)
             gen.append(c)
         gennum += 1

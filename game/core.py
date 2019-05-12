@@ -145,6 +145,8 @@ class Arena:
                         moving_distance = (dist_side-dist_center)/2
                         orientation = (fighter1.position[0] - fighter2.position[0], fighter1.position[1] - fighter2.position[1])
                         norm = sqrt(pow(orientation[0], 2) + pow(orientation[1], 2))
+                        if norm == 0:
+                            norm = 1
                         orientation = (orientation[0]/norm, orientation[1]/norm)
                         # Gotta move fighter2 of dist_side-dist_center/2 following the orientation. Same for fighter1 but in the opposite direction
                         fighter2.position[0] -= orientation[0] * moving_distance

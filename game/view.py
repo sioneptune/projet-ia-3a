@@ -1,6 +1,7 @@
 #####
 # File containing the game's graphics
 #####
+import random
 
 import pygame
 from game.core import Arena, Fighter
@@ -20,7 +21,7 @@ GREY = (100, 100, 100)
 def pg_init():
     pygame.init()
     size = (700, 700)
-    screen = pygame.display.set_mode(size, pygame.RESIZABLE)    # problem with display size, FIX IT
+    screen = pygame.display.set_mode(size, pygame.RESIZABLE)  # problem with display size, FIX IT
     pygame.display.set_caption("Lol I kinda tolerate life")
     return screen
 
@@ -33,8 +34,8 @@ def events(game, player):
         player.turn(False)
     if keys[pygame.K_RIGHT]:
         player.turn(True)
-        #print("turned right")
-        #print(player.direction)
+        # print("turned right")
+        # print(player.direction)
     if keys[pygame.K_UP]:
         player.dash()
     if keys[pygame.K_g]:
@@ -43,7 +44,7 @@ def events(game, player):
         player.remove_health_manually(10)
     if keys[pygame.K_f]:
         player.shoot()
-        #print("shot"On ir)
+        # print("shot"On ir)
     if keys[pygame.K_k]:
         game.fighter_down(fighter=game.fighters[2], killer=player)
 
@@ -76,10 +77,12 @@ def run(player):
 
     game = Arena()
     player.arena = game
-    game.fighters.append(player)
-    game.fighters.append(NaiveBot(position=[100, 100], direction=45, arena=game))
-    game.fighters.append(NaiveBot(position=[600, 100], direction=135, arena=game))
-    game.fighters.append(NaiveBot(position=[100, 600], direction=-45, arena=game))
+    game.populate([player, NaiveBot([random.randint(50, 650), random.randint(50, 650)], arena=game,
+                                    direction=random.randint(-180, 180)),
+                   NaiveBot([random.randint(50, 650), random.randint(50, 650)], arena=game,
+                            direction=random.randint(0, 360)),
+                   NaiveBot([random.randint(50, 650), random.randint(50, 650)], arena=game,
+                            direction=random.randint(-180, 2 * 90))])
 
     player.turn(False)
     player.move()
@@ -116,14 +119,14 @@ def render(arena, screen):
 
 def render_fighter(f, screen, color):
     """RTFT"""
-    renderbox = [f.position[0]-f.size/4, f.position[1]-f.size/4, f.size/2, f.size/2]
+    renderbox = [f.position[0] - f.size / 4, f.position[1] - f.size / 4, f.size / 2, f.size / 2]
     pygame.draw.ellipse(screen, color, renderbox)
-    pygame.draw.line(screen, BLACK, list(f.position), [f.position[0] + f.size/3 * cos(radians(f.direction)),
-                                                       f.position[1] + f.size/3 * sin(radians(f.direction))],
-                     int(f.size/20))
+    pygame.draw.line(screen, BLACK, list(f.position), [f.position[0] + f.size / 3 * cos(radians(f.direction)),
+                                                       f.position[1] + f.size / 3 * sin(radians(f.direction))],
+                     int(f.size / 20))
     if not isinstance(f, NaiveBot):
-        pygame.draw.line(screen, RED, f.position, [f.position[0] + 400*cos(radians(f.direction)),
-                                                   f.position[1] + 400*sin(radians(f.direction))])
+        pygame.draw.line(screen, RED, f.position, [f.position[0] + 400 * cos(radians(f.direction)),
+                                                   f.position[1] + 400 * sin(radians(f.direction))])
 
 
 def render_bullet(b, screen):
@@ -131,4 +134,4 @@ def render_bullet(b, screen):
 
 
 if __name__ == '__main__':
-    run(CleverBot([24,10,4],[600, 600]))
+    run(CleverBot([24, 10, 4], [600, 600]))
